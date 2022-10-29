@@ -6,6 +6,10 @@ The format is based on [Keep a changelog](https://keepachangelog.com/) and the v
 [Semantic Versioning](https://semver.org).
 
 
+## 3.3.2
+### Fixed
+- `editor` configuration option now works with editors that require additional parameters, like `editor = code -r -w`
+
 ## 3.3.1
 ### Fixed
 - Cancelling to save a search crashed pter

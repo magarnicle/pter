@@ -1738,9 +1738,10 @@ class CursesApplication(Application):
         for value in candidates:
             if value is None or len(value.strip()) == 0:
                 continue
-            editor = shutil.which(value)
+            value = shlex.split(value)
+            editor = shutil.which(value[0])
             if editor is not None:
-                return shlex.split(editor)
+                return shlex.split(editor) + value[1:]
 
         return None
 
