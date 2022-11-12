@@ -6,6 +6,11 @@ The format is based on [Keep a changelog](https://keepachangelog.com/) and the v
 [Semantic Versioning](https://semver.org).
 
 
+## 3.4.0
+### Changed
+- Priorities are now supported in the full specified range of todo.txt, i.e. from `A` through `Z` (thanks to Gerrit)
+
+
 ## 3.3.2
 ### Fixed
 - `editor` configuration option now works with editors that require additional parameters, like `editor = code -r -w`

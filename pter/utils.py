@@ -222,6 +222,8 @@ def toggle_hidden(task):
 
 
 def set_priority(task, prio):
+    if task.is_completed:
+        return
     task.priority = prio
     task.parse(str(task))
 
@@ -232,9 +234,12 @@ def increase_priority(task):
     Will do nothing if the task already has priority `(A)`.
 
     Returns True if the priority has been increased, False otherwise."""
-    next_prio = {'B': 'A', 'C': 'B', 'D': 'C', None: 'D'}
-    if task.priority in next_prio:
-        set_priority(task, next_prio[task.priority])
+    if task.priority is None:
+        next_prio = 'Z'
+    else:
+        next_prio = max('A', min('Z', chr(ord(task.priority) - 1)))
+    if task.priority != next_prio:
+        set_priority(task, next_prio)
         return True
     return False
 
@@ -245,9 +250,12 @@ def decrease_priority(task):
     Will do nothing if the task has no priority.
 
     Returns True if the priority has been decreased, False otherwise."""
-    next_prio = {'D': None, 'C': 'D', 'B': 'C', 'A': 'B'}
-    if task.priority in next_prio:
-        set_priority(task, next_prio[task.priority])
+    if task.priority == 'Z' or task.priority == None:
+        next_prio = None
+    else:
+        next_prio = max('A', min('Z', chr(ord(task.priority) + 1)))
+    if task.priority != next_prio:
+        set_priority(task, next_prio)
         return True
     return False
 
