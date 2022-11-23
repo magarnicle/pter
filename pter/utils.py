@@ -272,7 +272,7 @@ def build_sort_order(order):
     sort_order = []
     for part in order.split(','):
         if part == 'completed':
-            sort_order.append(lambda t: t.is_completed)
+            sort_order.append(lambda t: t.is_completed is None or t.is_completed)
         elif part == 'due_in':
             sort_order.append(lambda t: task_due_in_days(t, sys.maxsize))
         elif part == 'priority':
