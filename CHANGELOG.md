@@ -6,6 +6,13 @@ The format is based on [Keep a changelog](https://keepachangelog.com/) and the v
 [Semantic Versioning](https://semver.org).
 
 
+## 3.4.1
+### Fixed
+- Deleting tasks was broken (thank you for fixing it, [Fabian-G](https://codeberg.org/Fabian-G)!)
+- Prevent creation of empty tasks (again, thanks to [Fabian-G](https://codeberg.org/Fabian-G))
+- Fixed startup bug when there were empty task lines (once more, thank you [Fabian-G](https://codeberg.org/Fabian-G))
+
+
 ## 3.4.0
 ### Changed
 - Priorities are now supported in the full specified range of todo.txt, i.e. from `A` through `Z` (thanks to Gerrit)
