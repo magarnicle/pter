@@ -39,6 +39,7 @@ SHORT_NAMES = {'quit': 'Quit',
                'save-search': 'Save search',
                'search-context': 'Search for context of this task',
                'search-project': 'Search for project of this task',
+               'clear-search': 'Clear the search',
                'first-item': 'First item',
                'last-item': 'Last item',
                'edit-task': 'Edit task',
@@ -699,24 +700,21 @@ class ContextCompletion(Completion):
             self.close()
             return
 
-        word = self.inputline.text[span[0]:self.inputline.cursor]
+        word = self.inputline.text[span[0]:self.inputline.cursor].lower()
         if word.startswith('@'):
-            options = {context
-                       for context in sum([list(source.contexts) for source in self.app.sources], start=[])
-                       if context.startswith(word)}
+            options = self.app.known_contexts()
         elif word.startswith('+'):
-            options = {project
-                       for project in sum([list(source.projects) for source in self.app.sources], start=[])
-                       if project.startswith(word)}
+            options = self.app.known_projects()
         else:
             return
+
+        options = [o for o in sorted(options)
+                   if o.lower().startswith(word)]
 
         if len(options) == 0 or (len(options) == 1 and word in options):
             self.close()
             return
 
-        options = list(options)
-        options.sort()
         self.set_alternatives(options, (y, x))
         self.app.paint()
 
@@ -1056,7 +1054,8 @@ class HelpScreen(RemappedScrollPanel):
                     'toggle-tracking', 'delegate', 'save-template', 'load-template',
                     'delete-task', 'prio-a', 'prio-b', 'prio-c', 'prio-c',
                     'prio-none', 'prio-up', 'prio-down']
-        search_fncs = ['search', 'load-search', 'save-search', 'search-context', 'search-project']
+        search_fncs = ['search', 'load-search', 'save-search',
+                       'search-context', 'search-project', 'clear-search']
         meta_fncs = ['show-help', 'open-manual', 'quit', 'cancel', 'refresh-screen',
                      'reload-tasks']
         other_fncs = ['open-url']
@@ -1296,8 +1295,11 @@ class CursesApplication(Application):
             'n': 'create-task',
             ':': 'jump-to',
             '/': 'search',
+            '^': 'clear-search',
             'c': 'search-context',
             'p': 'search-project',
+            '<f6>': 'select-project',
+            '<f7>': 'select-context',
             't': 'toggle-tracking',
             '^L': 'refresh-screen',
             '^R': 'reload-tasks',
@@ -1348,10 +1350,13 @@ class CursesApplication(Application):
             'search': self.do_start_search,
             'search-context': self.do_search_context,
             'search-project': self.do_search_project,
+            'select-context': self.do_select_context,
+            'select-project': self.do_select_project,
             'load-template': self.do_load_template,
             'save-template': self.do_save_template,
             'load-search': self.do_load_search,
             'save-search': self.do_save_search,
+            'clear-search': self.do_clear_search,
             'edit-task': self.do_edit_task,
             'edit-external': self.do_edit_task_external,
             'create-task': self.do_create_task,
@@ -1716,6 +1721,16 @@ class CursesApplication(Application):
             logging.fatal("No key defined to exit pter.")
             raise RuntimeError("No key to exit")
 
+    def known_contexts(self):
+        """Returns a set of all contexts used in the tasks"""
+        return set(sum([list(source.contexts) for source in self.sources],
+                       start=[]))
+
+    def known_projects(self):
+        """Returns a set of all projects used in the tasks"""
+        return set(sum([list(source.projects) for source in self.sources],
+                       start=[]))
+
     def info(self, text):
         self.status_bar.set_text(text)
         self.status_bar.paint(True)
@@ -1860,6 +1875,9 @@ class CursesApplication(Application):
         self.apply_search()
         self.search_bar.paint(True)
         self.tasks.paint(True)
+
+    def do_clear_search(self):
+        self.set_search('')
 
     def do_save_search(self):
         self.focus.append(UserInput(self.tasks,
@@ -2065,6 +2083,40 @@ class CursesApplication(Application):
             self.focus.append(Selector(self.tasks,
                                        contexts,
                                        lambda c: self.add_to_search('@'+c),
+                                       title="Select Context",
+                                       numbered=True))
+            self.paint(True)
+
+    def do_select_project(self):
+        projects = self.known_projects()
+        if len(projects) == 0:
+            return
+
+        projects = [p[1:] for p in sorted(projects) if len(p) > 1]
+
+        if len(projects) == 1:
+            self.set_search('+'+projects[0])
+        else:
+            self.focus.append(Selector(self.tasks,
+                                       projects,
+                                       lambda p: self.set_search('+'+p),
+                                       title="Select project",
+                                       numbered=True))
+            self.paint(True)
+
+    def do_select_context(self):
+        contexts = self.known_contexts()
+
+        if len(contexts) == 0:
+            return
+
+        contexts = [c[1:] for c in sorted(contexts) if len(c) > 1]
+        if len(contexts) == 1:
+            self.set_search('@'+contexts[0])
+        else:
+            self.focus.append(Selector(self.tasks,
+                                       contexts,
+                                       lambda c: self.set_search('@'+c),
                                        title="Select Context",
                                        numbered=True))
             self.paint(True)

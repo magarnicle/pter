@@ -317,8 +317,11 @@ lists and the task list:
  - ``reload-tasks``: enforce reloading of all tasks from all sources
  - ``save-search``: save the current search
  - ``search``: enter a new search query
+ - ``clear-search``: clear the search query
  - ``search-context``: select a context from the selected task and search for it
  - ``search-project``: select a project from the selected task and search for it
+ - ``select-context``: select a context from all used contexts and search for it
+ - ``select-project``: select a project from all used projects and search for it
  - ``show-help``: show the full screen help (only key bindings so far)
  - ``open-manual``: open this manual in a browser
  - ``toggle-done``: toggle the "done" state of a task
@@ -662,8 +665,11 @@ In the list of tasks, the following controls are also available:
  - "E": edit the currently selected task in an external text editor
  - "n": create a new task
  - "/": edit the search query
+ - "^": clear the search
  - "c": search for a context of the currently selected task
  - "p": search for a project of the currently selected task
+ - "F6": select one project out of all used projects to search for
+ - "F7": select one context out of all used contexts to search for
  - "q": quit the program
  - "l": load a named search
  - "s": save the current search

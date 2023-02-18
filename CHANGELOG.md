@@ -6,6 +6,15 @@ The format is based on [Keep a changelog](https://keepachangelog.com/) and the v
 [Semantic Versioning](https://semver.org).
 
 
+## 3.5.0
+### Added
+- New function `clear-search`, which is bound to `^` by default ([#27](https://github.com/vonshednob/pter/issues/27))
+- New functions `select-project` (`F6`) and `select-context` (`F7`) (thanks to [lrustand](https://github.com/lrustand); fixes [#27](https://github.com/vonshednob/pter/issues/27))
+
+### Changed
+- Completion now will only show contexts or projects that actually start with what you've typed already
+
+
 ## 3.4.1
 ### Fixed
 - Deleting tasks was broken (thank you for fixing it, [Fabian-G](https://codeberg.org/Fabian-G)!)
