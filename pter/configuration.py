@@ -25,6 +25,7 @@ DEFAULT_CONFIG = {
             common.SETTING_CREATE_FROM_SEARCH: 'no',
             common.SETTING_AUTO_ID: 'no',
             common.SETTING_HIDE_SEQUENTIAL: 'yes',
+            common.SETTING_RELATED_SHOW_SELF: 'yes',
             common.SETTING_INFO_TIMEOUT: common.DEFAULT_INFO_TIMEOUT,
             common.SETTING_USE_COMPLETION: 'yes',
             common.SETTING_DELETE_IS: 'disabled',
@@ -105,6 +106,8 @@ DEFAULT_CONFIG = {
 
 
 class Configuration:
+    BOOL_TRUE = ['y', 'yes', '1', 'true', 'on']
+
     def __init__(self, conf):
         self.conf = conf
 
@@ -125,7 +128,7 @@ class Configuration:
             return default
 
     def bool(self, group, item, default='n'):
-        return self.get(group, item, default).lower() in ['y', 'yes', '1', 'true', 'on']
+        return self.get(group, item, default).lower() in self.BOOL_TRUE
 
     def list(self, group, item, default='', sep=',', strip=True):
         return [e.strip() if strip else e for e in self.get(group, item, default).split(sep)]

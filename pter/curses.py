@@ -171,10 +171,15 @@ class StatusBar(Panel):
                                                   common.SETTING_INFO_TIMEOUT,
                                                   common.DEFAULT_INFO_TIMEOUT))
 
-    def set_text(self, text, color=None):
+    def set_text(self, text, color=None, expire=True):
         self.text = text
         self.color = color or common.SETTING_COL_NORMAL
-        self.expire = datetime.datetime.now() + datetime.timedelta(seconds=self.blank_after)
+        if expire is True:
+            self.expire = datetime.datetime.now() + datetime.timedelta(seconds=self.blank_after)
+        elif isinstance(expire, datetime.datetime):
+            self.expire = expire
+        else:
+            self.expire = datetime.datetime.max
         self.paint()
 
     def is_expired(self):
@@ -238,11 +243,13 @@ class HelpBar(Panel):
             keys = [k for k, v in mapping.items() if v == action]
             if len(keys) == 0:
                 continue
-
-            if keys[0] in Key.SPECIAL:
-                keytext = f" {tr(Key.SPECIAL[keys[0]])} "
-            else:
-                keytext = f" {tr(keys[0])} "
+            keytext = []
+            for key in keys[0]:
+                if key in Key.SPECIAL:
+                    keytext.append(tr(Key.SPECIAL[key]))
+                else:
+                    keytext.append(tr(key))
+            keytext = ' ' + ''.join(keytext) + ' '
             if x + len(keytext) + len(label) >= self.dim[1]:
                 break
 
@@ -257,12 +264,24 @@ class RemappedScrollPanel(ScrollPanel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.SCROLL_NEXT = [key for key, value in self.app.key_mapping.items() if value == 'next-item']
-        self.SCROLL_PREVIOUS = [key for key, value in self.app.key_mapping.items() if value == 'prev-item']
-        self.SCROLL_NEXT_PAGE = [key for key, value in self.app.key_mapping.items() if value == 'page-down']
-        self.SCROLL_PREVIOUS_PAGE = [key for key, value in self.app.key_mapping.items() if value == 'page-up']
-        self.SCROLL_TO_START = [key for key, value in self.app.key_mapping.items() if value == 'first-item']
-        self.SCROLL_TO_END = [key for key, value in self.app.key_mapping.items() if value == 'last-item']
+        self.SCROLL_NEXT = [keys[0]
+                            for keys, value in self.app.key_mapping.items()
+                            if value == 'next-item']
+        self.SCROLL_PREVIOUS = [keys[0]
+                                for keys, value in self.app.key_mapping.items()
+                                if value == 'prev-item']
+        self.SCROLL_NEXT_PAGE = [keys[0]
+                                 for keys, value in self.app.key_mapping.items()
+                                 if value == 'page-down']
+        self.SCROLL_PREVIOUS_PAGE = [keys[0]
+                                     for keys, value in self.app.key_mapping.items()
+                                     if value == 'page-up']
+        self.SCROLL_TO_START = [keys[0]
+                                for keys, value in self.app.key_mapping.items()
+                                if value == 'first-item']
+        self.SCROLL_TO_END = [keys[0]
+                              for keys, value in self.app.key_mapping.items()
+                              if value == 'last-item']
 
         self.SCROLL_MARGIN = self.app.scroll_margin
 
@@ -977,7 +996,7 @@ class Selector(RemappedScrollPanel):
 
     def handle_key(self, key):
         strkey = str(key)
-        fnc = self.app.key_mapping.get(strkey, None)
+        fnc = self.app.key_mapping.get((strkey,), None)
 
         if fnc == 'cancel':
             self.destroy()
@@ -1102,7 +1121,9 @@ class HelpScreen(RemappedScrollPanel):
         attrs = common.SETTING_COL_NORMAL
         if item[1] == '':
             attrs = common.SETTING_COL_CONTEXT
-        self.win.addstr(y, x, item[0] + " "*(self.maxnamelen-len(item[0])+3) + item[1], self.app.color(attrs))
+        keytext = ''.join(item[1])
+        fnclabel = item[0]
+        self.win.addstr(y, x, fnclabel + " "*(self.maxnamelen-len(fnclabel)+3) + keytext, self.app.color(attrs))
         self.win.noutrefresh()
 
     def collect_name_fnc(self, fncs, mapping):
@@ -1111,7 +1132,7 @@ class HelpScreen(RemappedScrollPanel):
                 yield name, key
 
     def handle_key(self, key):
-        fnc = self.app.key_mapping.get(str(key), None)
+        fnc = self.app.key_mapping.get((str(key),), None)
 
         if fnc in ['quit', 'cancel']:
             self.destroy()
@@ -1275,49 +1296,51 @@ class CursesApplication(Application):
         self.selected_template = None
 
         # keys, mappings, and functions
+        self.key_sequence = []  # current sequence of keys
         self.key_mapping = {
-            'q': 'quit',
-            '^C': 'cancel',
-            '<escape>': 'cancel',
-            '<down>': 'next-item',
-            '<up>': 'prev-item',
-            '<pgup>': 'page-up',
-            '<pgdn>': 'page-down',
-            '<home>': 'first-item',
-            '<end>': 'last-item',
-            'j': 'next-item',
-            'k': 'prev-item',
-            '<return>': 'select-item',
-            'h': 'toggle-hidden',
-            'd': 'toggle-done',
-            'e': 'edit-task',
-            'E': 'edit-external',
-            'n': 'create-task',
-            ':': 'jump-to',
-            '/': 'search',
-            '^': 'clear-search',
-            'c': 'search-context',
-            'p': 'search-project',
-            '<f6>': 'select-project',
-            '<f7>': 'select-context',
-            't': 'toggle-tracking',
-            '^L': 'refresh-screen',
-            '^R': 'reload-tasks',
-            'u': 'open-url',
-            '>': 'delegate',
-            'L': 'load-template',
-            'S': 'save-template',
-            'l': 'load-search',
-            's': 'save-search',
-            '?': 'show-help',
-            'm': 'open-manual',
-            'A': 'prio-a',
-            'B': 'prio-b',
-            'C': 'prio-c',
-            'D': 'prio-d',
-            '+': 'prio-up',
-            '-': 'prio-down',
-            '=': 'prio-none',
+            ('q',): 'quit',
+            ('^C',): 'cancel',
+            ('<escape>',): 'cancel',
+            ('<down>',): 'next-item',
+            ('<up>',): 'prev-item',
+            ('<pgup>',): 'page-up',
+            ('<pgdn>',): 'page-down',
+            ('<home>',): 'first-item',
+            ('<end>',): 'last-item',
+            ('j',): 'next-item',
+            ('k',): 'prev-item',
+            ('r',): 'show-related',
+            ('<return>',): 'select-item',
+            ('h',): 'toggle-hidden',
+            ('d',): 'toggle-done',
+            ('e',): 'edit-task',
+            ('E',): 'edit-external',
+            ('n',): 'create-task',
+            (':',): 'jump-to',
+            ('/',): 'search',
+            ('^',): 'clear-search',
+            ('c',): 'search-context',
+            ('p',): 'search-project',
+            ('<f6>',): 'select-project',
+            ('<f7>',): 'select-context',
+            ('t',): 'toggle-tracking',
+            ('^L',): 'refresh-screen',
+            ('^R',): 'reload-tasks',
+            ('u',): 'open-url',
+            ('>',): 'delegate',
+            ('L',): 'load-template',
+            ('S',): 'save-template',
+            ('l',): 'load-search',
+            ('s',): 'save-search',
+            ('?',): 'show-help',
+            ('m',): 'open-manual',
+            ('A',): 'prio-a',
+            ('B',): 'prio-b',
+            ('C',): 'prio-c',
+            ('D',): 'prio-d',
+            ('+',): 'prio-up',
+            ('-',): 'prio-down',
+            ('=',): 'prio-none',
             }
         self.editor_key_mapping = {
             '^C': 'cancel',
@@ -1345,6 +1368,7 @@ class CursesApplication(Application):
         self.functions = {
             'quit': self.do_quit,
             'nop': lambda: True,
+            'cancel': lambda: True,
             'refresh-screen': self.do_refresh_screen,
             'reload-tasks': self.do_reload_tasks,
             'search': self.do_start_search,
@@ -1369,6 +1393,7 @@ class CursesApplication(Application):
             'delegate': self.do_delegate,
             'open-manual': utils.open_manual,
             'delete-task': self.do_delete,
+            'show-related': self.do_show_related,
             'prio-up': self.do_prio_up,
             'prio-down': self.do_prio_down,
             'prio-none': lambda: self.do_set_prio(None),
@@ -1418,7 +1443,7 @@ class CursesApplication(Application):
         then = datetime.datetime.now()
 
         self.set_term_title("pter")
-        self.info('Welcome to pter')
+        self.info(tr('Welcome to pter'))
         self.focus = [self.tasks]
 
         while not self.quit:
@@ -1469,22 +1494,37 @@ class CursesApplication(Application):
             if key == Key.RESIZE:
                 self.resize()
                 self.paint(True)
+            elif len(self.focus) == 0:
+                continue
             elif self.focus[-1] is self.search_bar:
                 self.search_bar.handle_key(key)
             elif isinstance(self.focus[-1], (HelpScreen, UserInput, RemappedInputLine, Selector)):
                 self.focus[-1].handle_key(key)
-            elif not key.special and str(key) in string.digits:
+            elif len(self.key_sequence) == 0 and not key.special and str(key) in string.digits:
                 self.do_jump_to(str(key))
-            elif str(key) in self.key_mapping and self.key_mapping[str(key)] in self.functions:
+            elif len(self.key_sequence) == 0 and self.focus[-1].handle_key(key):
                 # clear status bar
                 if len(self.status_bar.text) > 0:
                     self.info('')
-
-                self.functions[self.key_mapping[str(key)]]()
-            elif len(self.focus) > 0 and self.focus[-1].handle_key(key):
-                # clear status bar
-                if len(self.status_bar.text) > 0:
+            elif len(self.key_sequence) > 0 and self.key_mapping.get((str(key),), None) == 'cancel':
+                self.key_sequence = []
+                self.info('')
+                logging.debug("Clearing key sequence")
+            elif key != Key.TIMEOUT:
+                kseq = tuple(self.key_sequence + [str(key)])
+                logging.debug(f"Current key sequence: {kseq}")
+                fnc = self.key_mapping.get(kseq)
+                if fnc is not None:
                     self.info('')
+                    self.key_sequence = []
+                    logging.debug(f"Calling {fnc}")
+                    self.functions[fnc]()
+                elif any(k[:len(kseq)] == kseq for k in self.key_mapping.keys()):
+                    self.key_sequence_info(''.join(kseq))
+                    self.key_sequence = list(kseq)
+                else:
+                    self.error(tr('No such keybinding'))
+                    self.key_sequence = []
 
     def paint(self, clear=False):
         if clear:
@@ -1693,33 +1733,72 @@ class CursesApplication(Application):
     def load_key_configuration(self):
         logging.debug("Loading key configuration")
         for item in self.conf[common.SETTING_GROUP_KEYS]:
-            target = None
+            targets = []
             fnc = self.conf.get(common.SETTING_GROUP_KEYS, item, None)
             for mapping in [self.key_mapping, self.editor_key_mapping, self.completion_key_mapping]:
                 if fnc in mapping.values():
-                    target = mapping
-            if target is None:
+                    targets.append(mapping)
+            if len(targets) == 0:
                 if fnc in self.functions:
-                    target = self.key_mapping
+                    targets.append(self.key_mapping)
                 else:
-                    logging.warning(f"Cannot bind {item} to {fnc}: no such function")
+                    logging.warning(f"Cannot bind {item} to '{fnc}': no such function")
                     continue
 
             logging.debug(f"Trying to map {item} to {fnc}")
 
-            if len(item) == 1:
-                target[item] = fnc
-            elif len(item) == 2 and item[0] == '^':
-                target[item.upper()] = fnc
-            elif item in Key.SPECIAL:
-                target[item] = fnc
-            else:
-                logging.error(f"Invalid key name '{item}' in configuration")
+            basekseq = parse_key_sequence(item)
+            if len(basekseq) > 1 and fnc not in self.functions:
+                logging.warning(f"Cannot bind {item} to {fnc}: key sequences "
+                                f"can not be used for {fnc}")
+                continue
+
+            kseq = []
+            for key in basekseq:
+                if len(key) == 1:
+                    kseq.append(key)
+                elif len(key) == 2 and key[0] == '^':
+                    kseq.append(key.upper())
+                elif key in Key.SPECIAL:
+                    kseq.append(key)
+                else:
+                    logging.error(f"Invalid key name '{item}' in configuration")
+                    kseq = None
+                    break
+
+            if kseq is None:
+                continue
+
+            for target in targets:
+                if target is self.key_mapping:
+                    target[tuple(kseq)] = fnc
+                    logging.debug(f"Assigned {kseq} to {fnc}")
+                elif len(kseq) > 1:
+                    logging.fatal(f"Invalid configuration: {fnc} can "
+                                  "not use a key sequence")
+                    continue
+                else:
+                    target[kseq[0]] = fnc
+
+        # remove shortcuts that cover sequences
+        # e.g. if there is a sequence 'pa' and the 'p' shortcut,
+        # remove the 'p' shortcut
+        sequences = [k for k in self.key_mapping.keys() if len(k) > 1]
+        for kseq in sequences:
+            for partial in range(len(kseq)-1):
+                partial = kseq[:partial+1]
+                if partial in self.key_mapping:
+                    logging.debug(f"Removing ambiguous mapping {partial}")
+                    del self.key_mapping[partial]
 
         to_exit = [k for k, fnc in self.key_mapping.items() if fnc == 'quit']
         if len(to_exit) == 0:
             logging.fatal("No key defined to exit pter.")
             raise RuntimeError("No key to exit")
+        to_cancel = [k for k, fnc in self.key_mapping.items() if fnc == 'cancel']
+        if len(to_cancel) == 0:
+            logging.fatal("No key defined to cancel operations.")
+            raise RuntimeError("No key to cancel")
 
     def known_contexts(self):
         """Returns a set of all contexts used in the tasks"""
@@ -1733,6 +1812,10 @@ class CursesApplication(Application):
 
     def info(self, text):
         self.status_bar.set_text(text)
+        self.status_bar.paint(True)
+
+    def key_sequence_info(self, text):
+        self.status_bar.set_text(text, expire=False)
         self.status_bar.paint(True)
 
     def error(self, text):
@@ -1937,7 +2020,6 @@ class CursesApplication(Application):
         self.paint()
 
     def do_jump_to(self, init=''):
-        logging.debug(f"do_jump_to")
         if len(self.focus) == 0:
             return
         if not hasattr(self.focus[-1], 'jump_to'):
@@ -2064,6 +2146,28 @@ class CursesApplication(Application):
     def do_refresh_screen(self):
         self.paint(True)
 
+    def do_show_related(self):
+        task = self.tasks.selected_item
+        if task is None:
+            return
+
+        task = task.task
+        others = set(task.attributes.get('after', []) + \
+                     task.attributes.get('ref', []))
+        if len(others) == 0:
+            self.error(tr("No related tasks declared (like 'after:' or 'ref:')"))
+            return
+
+        show_self = self.conf.get(common.SETTING_GROUP_GENERAL, common.SETTING_RELATED_SHOW_SELF).lower()
+
+        if show_self in self.conf.BOOL_TRUE + ['force']:
+            if 'id' not in task.attributes and show_self == 'force':
+                task.parse(str(task) + ' id:' + utils.new_task_id(self.sources))
+            if 'id' in task.attributes:
+                others.add(task.attributes['id'][0])
+
+        self.set_search(' '.join(['id:' + other for other in sorted(others)]))
+
     def do_search_context(self):
         task = self.tasks.selected_item
         if task is None:
@@ -2186,6 +2290,32 @@ class CursesApplication(Application):
                                        title="Select Project",
                                        numbered=True))
             self.paint(True)
+
+
+def parse_key_sequence(text):
+    sequence = []
+
+    pos = 0
+    while pos < len(text):
+        token = text[pos]
+        if token == '<':
+            other = text.find('>', pos)
+            if other < 0:
+                return None
+            sequence.append(text[pos:other+1])
+            pos = other
+        elif token == '^' and pos < len(text)-1:
+            pos += 1
+            if text[pos] == '^':
+                sequence.append('^')
+            else:
+                sequence.append('^' + text[pos])
+        else:
+            sequence.append(token)
+
+        pos += 1
+
+    return tuple(sequence)
 
 
 def add_title(panel, title, attr=0):

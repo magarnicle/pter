@@ -210,8 +210,8 @@ General
     on a task. Defaults to ``http, https, mailto, ftp, ftps``.
 
   ``add-creation-date``
-    Whether or not to automatically always add the creation date of a task
-    to it when creating the task. Defaults to ``yes``.
+    Whether or not to automatically add the creation date of a task
+    to it. Defaults to ``yes``.
 
   ``create-from-search``
     If set to ``yes``, positive expressions (that do not refer to time or
@@ -257,6 +257,18 @@ General
 
     Defaults to ``no``.
 
+  ``related-show-self``
+    Whether or not to show the current task, too, when showing its related
+    tasks. This can be set to ``yes``, ``no`` or ``force``.
+
+    ``yes`` means, not only the related tasks are shown, but also this one.
+
+    ``force`` is the same as ``yes``, but if the current task does not have
+    an ``id:`` attribute, it will be given one. In other words, this option
+    may modify your ``todo.txt`` file.
+
+    Defaults to ``yes``.
+
 
 Symbols
 -------
@@ -293,26 +305,32 @@ functions in pter and qpter.
 For details on how to setup shortcuts for qpter, please see below in
 section `GUI Keys`_.
 
-There are two main distinct groups of functions. The first, for general
-lists and the task list:
+There are three main distinct groups of functions. The first, for general
+lists:
 
+ - ``cancel``: cancel or exit the current window or input field
+ - ``jump-to``: enter a number to jump to that item in the list
+ - ``first-item``: jump to the first item in a list
+ - ``last-item``: jump to the last item in a list
+ - ``page-up``: scroll up by one page
+ - ``page-down``: scroll down by one page
+ - ``next-item``: select the next item in a list
+ - ``prev-item``: select the previous item in a list
+
+Second, there are more complex functions to edit tasks or control pter
+(for these functions you may use key sequences, see below for details):
+
+ - ``quit``: quit the program
+ - ``show-help``: show the full screen help (only key bindings so far)
+ - ``open-manual``: open this manual in a browser
  - ``create-task``: create a new task
  - ``edit-task``: edit the selected task
  - ``edit-external``: edit the selected task in an external text editor
  - ``delete-task``: delete the selected task or move it to trash, depends
    on the configuration option ``delete-is`` (by default not bound to any
    key)
- - ``first-item``: jump to the first item in a list
- - ``page-down``: scroll down by one page
- - ``page-up``: scroll up by one page
- - ``jump-to``: enter a number to jump to that item in the list
- - ``last-item``: jump to the last item in a list
  - ``load-search``: show the saved searches to load one
- - ``next-item``: select the next item in a list
- - ``nop``: nothing (in case you want to unbind keys)
  - ``open-url``: open a URL of the selected task
- - ``prev-item``: select the previous item in a list
- - ``quit``: quit the program
  - ``refresh-screen``: rebuild the GUI
  - ``reload-tasks``: enforce reloading of all tasks from all sources
  - ``save-search``: save the current search
@@ -322,8 +340,7 @@ lists and the task list:
  - ``search-project``: select a project from the selected task and search for it
  - ``select-context``: select a context from all used contexts and search for it
  - ``select-project``: select a project from all used projects and search for it
- - ``show-help``: show the full screen help (only key bindings so far)
- - ``open-manual``: open this manual in a browser
+ - ``show-related``: show tasks that are related to this one (by means of ``after:`` or ``ref:``)
  - ``toggle-done``: toggle the "done" state of a task
  - ``toggle-hidden``: toggle the "hidden" state of a task
  - ``toggle-tracking``: start or stop time tracking for the selected task
@@ -335,8 +352,9 @@ lists and the task list:
  - ``prio-none``: remove the priority from the selected task
  - ``prio-up``: increase the priority of the selected task
  - ``prio-down``: decrease the priority of the selected task
+ - ``nop``: nothing (in case you want to unbind keys)
 
-And the second list of functions for edit fields:
+And finally, the list of functions for edit fields:
 
  - ``cancel``, cancel editing, leave the editor (reverts any changes)
  - ``del-left``, delete the character left of the cursor
@@ -385,6 +403,33 @@ An example could look like this::
   ^k = quit
   <F3> = search
   C = create-task
+
+
+Key Sequences
+~~~~~~~~~~~~~
+
+For the functions of the second list, the more complex functions for
+editing tasks or controlling pter, you may also use key sequences. For
+example, you may want to prefix all shortcuts to manipulate the priority of
+a task with the letter ``p`` and define these sequences::
+
+  [Keys]
+  p+ = prio-up
+  p- = prio-down
+  pa = prio-a
+  pb = prio-b
+  pc = prio-c
+  pd = prio-d
+  p0 = prio-none
+
+Now to increase the priority of a task, you would type first ``p``,
+followed by ``+``.
+
+The progress of a key sequence will show in the lower left of the screen,
+showing the keys that you have pressed so far. To cancel a key sequence
+type the single key shortcut for ``cancel`` (usually ``Escape`` or ``Ctrl-C``)
+or just type any invalid key that's not part of the sequence (in the
+previous example, ``px`` would do the trick).
 
 
 GUI Keys
@@ -668,6 +713,7 @@ In the list of tasks, the following controls are also available:
  - "^": clear the search
  - "c": search for a context of the currently selected task
  - "p": search for a project of the currently selected task
+ - "r": search for all tasks that this task is referring to with ``ref:`` or ``after:``
  - "F6": select one project out of all used projects to search for
  - "F7": select one context out of all used contexts to search for
  - "q": quit the program
@@ -749,7 +795,7 @@ Unless configured otherwise by you, the search is case-sensitive.
 
 Here's a detailed explanation of search queries.
 
-Some fxample search queries are listed in `Named Searches`_.
+Some example search queries are listed in `Named Searches`_.
 
 
 Search for phrases
@@ -778,7 +824,7 @@ Hidden tasks
 ------------
 
 Even though not specified by the todotxt standard, some tools provide the
-“hide” flag for tasks: ``h:1``. pytodoweb understands this, too, and by default
+“hide” flag for tasks: ``h:1``. pter understands this, too, and by default
 hides these tasks.
 
 To show hidden tasks, search for ``hidden:yes``. Instead of searching for
@@ -878,7 +924,7 @@ indicate that a task should not be active prior to the defined date.
 
 If you still want to see all tasks, even those with a threshold in the future,
 you can search for ``threshold:`` (or, short, ``t:``). See also the
-`General`_ configuration option 'default-threshold'.
+`General`_ configuration option ``default-threshold``.
 
 You can also pretend it’s a certain date in the future (eg. 2042-02-14) and
 see what tasks become available then by searching for ``threshold:2042-02-14``.
@@ -929,8 +975,8 @@ Filename
 --------
 
 You can search for parts of a filename that a task belongs to with
-``file:``. ``not:`` can be used to exclude tasks that belong to a certain
-file.
+``file:``. ``not:`` (or ``-``) can be used to exclude tasks that belong to
+a certain file.
 
 For example: ``file:todo.txt`` or ``-file:archive``.
 
@@ -1074,6 +1120,10 @@ You can refer to other tasks using the attribute ``ref:`` following the id
 of the task that you are referring to. This may also be a comma separated
 list of tasks (much like ``after:``, see `Task Sequences`_).
 
+You may use the ``show-related`` function (by default on the key ``r``) to
+show the tasks that this task is referring to by means of ``ref:`` or
+``after:``.
+
 
 Task Sequences
 ==============
@@ -1122,7 +1172,7 @@ plates``, to be completed.
 Recurring Tasks
 ===============
 
-Recurring, or repeating, tasks can be indicated by adding the ``rec:`` tag
+Recurring (or repeating) tasks can be indicated by adding the ``rec:`` tag
 and a `Relative Dates`_ specifier, like this::
 
   A weekly task rec:1w
@@ -1192,7 +1242,7 @@ the following extra key/value tags:
 - ``id:3``, allows you to assign a unique identifier to entries in the todo.txt, like ``3``. pter will accept when there non-unique IDs, but of course uniquely identifying entries will be tricky.
 - ``rec:1w``, indicate that this task should be recurring in 1 week intervals.
 - ``ref:6``, indicate that this task refers to the task with ``id:6``.  Comma-separated IDs are supported, like ``ref:13,9``.
-- ``spent:5h3m``, pter can be used for time tracking and will store the duration that was spent on a task in the ``spent`` attribute.
+- ``spent:5h3m``, pter can be used for time tracking and will store the time spent on a task in the ``spent`` attribute.
 - ``t:2070-12-24``, the threshold tag can be used to hide before the given date has come.
 - ``to:person``, when a task has been delegated (by using a delegation marker like ``@delegated``), ``to`` can be used to indicate to whom the task has been delegated. The option is configurable, see ``delegation-to`` above for details.
 - ``tracking:``, a technical tag used for time tracking. It indicates that you started working on the task and wanted to do time tracking. The value is the date and time when you started working. Upon stopping tracking, the spent time will be stored in the ``spent`` tag.
@@ -1209,5 +1259,5 @@ described in the previous section.
 Bugs
 ====
 
-Probably plenty. Please report your findings at https://github.com/vonshednob/pter or via email to the authors at https://vonshednob.cc/pter .
+Probably plenty. Please report your findings at `Codeberg <https://codeberg.org/vonshednob/pter>`_, `Github <https://github.com/vonshednob/pter>`_ or via email to the authors at `<https://vonshednob.cc/pter>`_.
 
