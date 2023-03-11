@@ -1517,8 +1517,9 @@ class CursesApplication(Application):
                 if fnc is not None:
                     self.info('')
                     self.key_sequence = []
-                    logging.debug(f"Calling {fnc}")
-                    self.functions[fnc]()
+                    if fnc in self.functions:
+                        logging.debug(f"Calling {fnc}")
+                        self.functions[fnc]()
                 elif any(k[:len(kseq)] == kseq for k in self.key_mapping.keys()):
                     self.key_sequence_info(''.join(kseq))
                     self.key_sequence = list(kseq)
