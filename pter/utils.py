@@ -18,6 +18,7 @@ from pter.source import Source
 
 DATETIME_FMT = '%Y-%m-%d-%H-%M-%S'
 FORMAT_TOKEN_RE = re.compile('^([^a-z]*)([a-z][a-z-]*)(.*)$')
+EMPTY_FIELD_RE = re.compile('([a-z]+[:])\s+')
 
 
 def duration_as_str(duration):

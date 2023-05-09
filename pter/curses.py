@@ -54,6 +54,7 @@ SHORT_NAMES = {'quit': 'Quit',
                'go-right': 'Go one character to the right',
                'go-bol': 'Go to start of line',
                'go-eol': 'Go to end of line',
+               'goto-empty': 'Goto the next empty key',
                'del-left': 'Delete to the left',
                'del-right': 'Delete to the right',
                'del-to-bol': 'Delete to start of line',
@@ -675,6 +676,11 @@ class RemappedInputLine(InputLine):
         elif fnc == 'go-eol':
             self.cursor = len(self.text)
             must_repaint = self.scroll()
+        elif fnc == 'goto-empty':
+            empty_field = utils.EMPTY_FIELD_RE.search(self.text, self.cursor)
+            if empty_field:
+                self.cursor = min(len(self.text), empty_field.end(1))
+                must_repaint = self.scroll()
         elif len(str(key)) == 1:
             self.text = self.text[:self.cursor] + str(key) + self.text[self.cursor:]
             self.cursor += 1
@@ -1092,7 +1098,7 @@ class HelpScreen(RemappedScrollPanel):
         lines += [('', ''), (tr('Other'), '')]
         lines += [(name, key) for name, key in self.collect_name_fnc(other_fncs, self.app.key_mapping)]
 
-        edt_nav_fncs = ['go-left', 'go-right', 'go-bol', 'go-eol']
+        edt_nav_fncs = ['go-left', 'go-right', 'go-bol', 'go-eol', 'goto-empty']
         edt_edt_fncs = ['del-left', 'del-right', 'del-to-bol']
         edt_meta_fncs = ['cancel', 'submit-input']
         edt_comp_fncs = ['comp-next', 'comp-prev', 'comp-use', 'comp-close']
@@ -1349,6 +1355,7 @@ class CursesApplication(Application):
             '<escape>': 'cancel',
             '<left>': 'go-left',
             '<right>': 'go-right',
+            '<tab>': 'goto-empty',
             '^U': 'del-to-bol',
             '<backspace>': 'del-left',
             '<del>': 'del-right',
