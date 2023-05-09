@@ -888,10 +888,13 @@ class TaskCreator(TaskEditor):
         add_creation_date = self.app.conf.bool(common.SETTING_GROUP_GENERAL, common.SETTING_ADD_CREATED)
         create_from_search = self.app.conf.bool(common.SETTING_GROUP_GENERAL, common.SETTING_CREATE_FROM_SEARCH)
         self.auto_id = self.app.conf.bool(common.SETTING_GROUP_GENERAL, common.SETTING_AUTO_ID)
+        self.editor.cursor = 1
 
         initial = []
         if add_creation_date:
-            initial.append(datetime.datetime.now().strftime(Task.DATE_FMT))
+            create_date = datetime.datetime.now().strftime(Task.DATE_FMT)
+            initial.append(create_date)
+            self.editor.cursor += len(create_date)
         if create_from_search:
             initial.append(utils.create_from_search(self.app.search))
         if self.app.selected_template is not None:
@@ -901,7 +904,6 @@ class TaskCreator(TaskEditor):
         if len(initial) > 0 and not initial.endswith(' '):
             initial += ' '
         self.editor.text = initial
-        self.editor.cursor = len(initial)
         self.editor.scroll()
 
         self.task = Task(initial, todotxt=self.app.sources[0])
