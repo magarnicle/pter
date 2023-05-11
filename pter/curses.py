@@ -678,9 +678,12 @@ class RemappedInputLine(InputLine):
             must_repaint = self.scroll()
         elif fnc == 'goto-empty':
             empty_field = utils.EMPTY_FIELD_RE.search(self.text, self.cursor)
+            if empty_field is None and self.app.tab_cycles:
+                empty_field = utils.EMPTY_FIELD_RE.search(self.text, 0)
             if empty_field:
                 self.cursor = min(len(self.text), empty_field.end(1))
                 must_repaint = self.scroll()
+
         elif len(str(key)) == 1:
             self.text = self.text[:self.cursor] + str(key) + self.text[self.cursor:]
             self.cursor += 1
@@ -1264,6 +1267,8 @@ class CursesApplication(Application):
                                    common.SETTING_SAFE_SAVE, 'y')
         self.use_completion = conf.bool(common.SETTING_GROUP_GENERAL,
                                         common.SETTING_USE_COMPLETION, 'y')
+        self.tab_cycles = conf.bool(common.SETTING_GROUP_GENERAL,
+                                        common.SETTING_TAB_CYCLES, 'y')
         self.trash_file = conf.path(common.SETTING_GROUP_GENERAL,
                                     common.SETTING_TRASHFILE,
                                     common.DEFAULT_TRASHFILE);
