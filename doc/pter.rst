@@ -364,6 +364,7 @@ And finally, the list of functions for edit fields:
  - ``go-eol``, move the cursor to the end of the line
  - ``go-left``, move the cursor one character to the left
  - ``go-right``, move the cursor one charackter to the right
+ - ``goto-empty``, move the cursor to the next ``tag:value`` where the is no ``value``
  - ``submit-input``, accept the changes, leave the editor (applies the changes)
  - ``select-file``, when creating a new task, this allows you to select
    what todo.txt file to save the task in
@@ -737,6 +738,7 @@ In edit fields the following keyboard controls are available:
  - "Enter", "Return": accept input and submit changes
  - "↓", "Tab", "^N": next item in the completion list
  - "↑", "^P": previous item in the completion list
+ - "Tab": jump to the next ``key:value`` field where there is not ``value``
  - "Enter": use the selected item of the completion list
  - "Esc", "^C": close the completion list
 
