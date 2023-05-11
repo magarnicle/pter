@@ -19,6 +19,7 @@ DEFAULT_CONFIG = {
             common.SETTING_DELEG_TO: 'to',
             common.SETTING_EXT_EDITOR: '',
             common.SETTING_ADD_CREATED: 'yes',
+            common.SETTING_TAB_CYCLES: 'yes',
             common.SETTING_TASK_FORMAT: common.DEFAULT_TASK_FORMAT,
             common.SETTING_CLEAR_CONTEXT: '',
             common.SETTING_PROTOCOLS: 'http,https,mailto,ftp,ftps',

@@ -54,6 +54,7 @@ SHORT_NAMES = {'quit': 'Quit',
                'go-right': 'Go one character to the right',
                'go-bol': 'Go to start of line',
                'go-eol': 'Go to end of line',
+               'goto-empty': 'Goto the next empty key',
                'del-left': 'Delete to the left',
                'del-right': 'Delete to the right',
                'del-to-bol': 'Delete to start of line',
@@ -675,6 +676,14 @@ class RemappedInputLine(InputLine):
         elif fnc == 'go-eol':
             self.cursor = len(self.text)
             must_repaint = self.scroll()
+        elif fnc == 'goto-empty':
+            empty_field = utils.EMPTY_FIELD_RE.search(self.text, self.cursor)
+            if empty_field is None and self.app.tab_cycles:
+                empty_field = utils.EMPTY_FIELD_RE.search(self.text, 0)
+            if empty_field:
+                self.cursor = min(len(self.text), empty_field.end(1))
+                must_repaint = self.scroll()
+
         elif len(str(key)) == 1:
             self.text = self.text[:self.cursor] + str(key) + self.text[self.cursor:]
             self.cursor += 1
@@ -888,10 +897,13 @@ class TaskCreator(TaskEditor):
         add_creation_date = self.app.conf.bool(common.SETTING_GROUP_GENERAL, common.SETTING_ADD_CREATED)
         create_from_search = self.app.conf.bool(common.SETTING_GROUP_GENERAL, common.SETTING_CREATE_FROM_SEARCH)
         self.auto_id = self.app.conf.bool(common.SETTING_GROUP_GENERAL, common.SETTING_AUTO_ID)
+        self.editor.cursor = 1
 
         initial = []
         if add_creation_date:
-            initial.append(datetime.datetime.now().strftime(Task.DATE_FMT))
+            create_date = datetime.datetime.now().strftime(Task.DATE_FMT)
+            initial.append(create_date)
+            self.editor.cursor += len(create_date)
         if create_from_search:
             initial.append(utils.create_from_search(self.app.search))
         if self.app.selected_template is not None:
@@ -901,7 +913,6 @@ class TaskCreator(TaskEditor):
         if len(initial) > 0 and not initial.endswith(' '):
             initial += ' '
         self.editor.text = initial
-        self.editor.cursor = len(initial)
         self.editor.scroll()
 
         self.task = Task(initial, todotxt=self.app.sources[0])
@@ -1090,7 +1101,7 @@ class HelpScreen(RemappedScrollPanel):
         lines += [('', ''), (tr('Other'), '')]
         lines += [(name, key) for name, key in self.collect_name_fnc(other_fncs, self.app.key_mapping)]
 
-        edt_nav_fncs = ['go-left', 'go-right', 'go-bol', 'go-eol']
+        edt_nav_fncs = ['go-left', 'go-right', 'go-bol', 'go-eol', 'goto-empty']
         edt_edt_fncs = ['del-left', 'del-right', 'del-to-bol']
         edt_meta_fncs = ['cancel', 'submit-input']
         edt_comp_fncs = ['comp-next', 'comp-prev', 'comp-use', 'comp-close']
@@ -1256,6 +1267,8 @@ class CursesApplication(Application):
                                    common.SETTING_SAFE_SAVE, 'y')
         self.use_completion = conf.bool(common.SETTING_GROUP_GENERAL,
                                         common.SETTING_USE_COMPLETION, 'y')
+        self.tab_cycles = conf.bool(common.SETTING_GROUP_GENERAL,
+                                        common.SETTING_TAB_CYCLES, 'y')
         self.trash_file = conf.path(common.SETTING_GROUP_GENERAL,
                                     common.SETTING_TRASHFILE,
                                     common.DEFAULT_TRASHFILE);
@@ -1347,6 +1360,7 @@ class CursesApplication(Application):
             '<escape>': 'cancel',
             '<left>': 'go-left',
             '<right>': 'go-right',
+            '<tab>': 'goto-empty',
             '^U': 'del-to-bol',
             '<backspace>': 'del-left',
             '<del>': 'del-right',
