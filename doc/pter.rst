@@ -1,9 +1,3 @@
-====
-pter
-====
------------------------------
-Personal Task Entropy Reducer
------------------------------
 
 Synopsis
 ========
@@ -352,6 +346,7 @@ Second, there are more complex functions to edit tasks or control pter
  - ``prio-none``: remove the priority from the selected task
  - ``prio-up``: increase the priority of the selected task
  - ``prio-down``: decrease the priority of the selected task
+ - ``multi-select``: add this to a set of selected tasks, which you can then perform bulk operations on
  - ``nop``: nothing (in case you want to unbind keys)
 
 And finally, the list of functions for edit fields:
@@ -471,6 +466,7 @@ Available function names are:
  - ``prio-up``, increase the priority of the selected task
  - ``prio-down``, decrease the priority of the selected task
  - ``prio-none``, remove the priority of the selected task
+ - ``multi-select``: add this to a set of selected tasks, which you can then perform bulk operations on
  - ``toggle-dark-mode``, toggle between dark and light mode (requires qdarkstyle to be installed)
 
 

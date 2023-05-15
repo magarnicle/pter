@@ -75,6 +75,7 @@ SHORT_NAMES = {'quit': 'Quit',
                'prio-none': 'Remove priority',
                'prio-up': 'Increase priority',
                'prio-down': 'Decrease priority',
+               'multi-select': 'Add to multiple selection',
                }
 
 
@@ -1083,7 +1084,7 @@ class HelpScreen(RemappedScrollPanel):
         edt_fncs = ['toggle-hidden', 'toggle-done', 'edit-task', 'create-task',
                     'toggle-tracking', 'delegate', 'save-template', 'load-template',
                     'delete-task', 'prio-a', 'prio-b', 'prio-c', 'prio-c',
-                    'prio-none', 'prio-up', 'prio-down']
+                    'prio-none', 'prio-up', 'prio-down', 'multi-select']
         search_fncs = ['search', 'load-search', 'save-search',
                        'search-context', 'search-project', 'clear-search']
         meta_fncs = ['show-help', 'open-manual', 'quit', 'cancel', 'refresh-screen',
@@ -1271,7 +1272,7 @@ class CursesApplication(Application):
                                         common.SETTING_TAB_CYCLES, 'y')
         self.trash_file = conf.path(common.SETTING_GROUP_GENERAL,
                                     common.SETTING_TRASHFILE,
-                                    common.DEFAULT_TRASHFILE);
+                                    common.DEFAULT_TRASHFILE)
         self.delete_is = conf.get(common.SETTING_GROUP_GENERAL,
                                   common.SETTING_DELETE_IS,
                                   common.DELETE_OPTION_DISABLED)
@@ -1354,6 +1355,7 @@ class CursesApplication(Application):
             ('+',): 'prio-up',
             ('-',): 'prio-down',
             ('=',): 'prio-none',
+            ('a',): 'multi-select',
             }
         self.editor_key_mapping = {
             '^C': 'cancel',
@@ -1415,12 +1417,14 @@ class CursesApplication(Application):
             'prio-b': lambda: self.do_set_prio('B'),
             'prio-c': lambda: self.do_set_prio('C'),
             'prio-d': lambda: self.do_set_prio('D'),
+            'multi-select': self.do_multi_select,
             }
 
         self.search_bar = None
         self.status_bar = None
         self.help_bar = None
         self.tasks = None
+        self.multi_selection = []
         self.focus = []
 
         self.load_key_configuration()
@@ -2305,6 +2309,15 @@ class CursesApplication(Application):
                                        title="Select Project",
                                        numbered=True))
             self.paint(True)
+
+    def do_multi_select(self):
+        task = self.tasks.selected_item
+        if task is None:
+            return
+        self.multi_selection.append(task)
+        # No duplicates
+        self.multi_selection = list(set(self.multi_selection))
+        logging.debug(f"added {task} to multi-selections {self.multi_selection}")
 
 
 def parse_key_sequence(text):

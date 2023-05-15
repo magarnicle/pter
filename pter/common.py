@@ -139,6 +139,7 @@ SETTING_GK_SET_PRIOA = 'prio-a'
 SETTING_GK_SET_PRIOB = 'prio-b'
 SETTING_GK_SET_PRIOC = 'prio-c'
 SETTING_GK_SET_PRIOD = 'prio-d'
+SETTING_GK_MULTI_SELECT = 'multi-select'
 
 TF_SELECTION = 'selection'
 TF_NUMBER = 'nr'
