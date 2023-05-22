@@ -1438,6 +1438,7 @@ class CursesApplication(Application):
             self.selection_indicator = '>'
 
         self.tasks = TaskList(self)
+        import pudb; pu.db
         self.search_bar = SearchBar(self, 1, (0, 0))
         self.status_bar = StatusBar(self)
         self.help_bar = HelpBar(self)
@@ -1617,6 +1618,7 @@ class CursesApplication(Application):
         current = self.tasks.selected_item
         self.all_tasks = []
         for source in self.sources:
+            import pudb; pu.db
             self.all_tasks += [(task, source) for task in source.tasks]
 
         self.apply_search()
