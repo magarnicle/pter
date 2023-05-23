@@ -127,3 +127,5 @@ tags
 dev.conf
 todo.txt
 trash.txt
+.DS_Store
+lynx*
