@@ -18,6 +18,8 @@ def reformat(todo):
         if "pri" in task.attributes:
             task.priority = task.attributes["pri"][0]
             task.remove_attribute("pri")
+        elif task.priority:
+            task.add_attribute("pri", task.priority)
     lines = []
     for task in sorted(tasks, key=lambda x: x.priority or "Z"):
         lines.append(" ".join(map(str, [item(task) for item in FORMAT])).replace("  ", " ").strip(" "))
@@ -29,7 +31,7 @@ def main():
     lines = reformat(todo)
     text = "\n".join(lines).strip(" \n")
     print(text)
-    todo_file.write_text(text)
+    #todo_file.write_text(text)
 
 if __name__ == "__main__":
     main()
