@@ -36,7 +36,13 @@ def reformat(todo):
                     task.replace_attribute("due", task.due_date.isoformat(), prev_due_date.isoformat())
 
     lines = []
-    for task in sorted(tasks, key=lambda x: x.priority or "Z"):
+    for task in sorted(tasks, key=lambda x: (
+        f'{1 if x.is_completed else 0}'
+        f'{x.priority or "Z"}'
+        f'{x.completion_date.isoformat() if x.completion_date else "9999"}'
+        f'{x.due_date.isoformat() if x.due_date else "9999"}'
+        f'{x.bare_description()}'
+    )):
         lines.append(" ".join(map(str, [item(task) for item in FORMAT])).replace("  ", " ").strip(" "))
     return lines
 

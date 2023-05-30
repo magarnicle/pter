@@ -1474,7 +1474,7 @@ class CursesApplication(Application):
                     logging.debug(f"Source {source} changed")
                     source.parse()
                     source_changed = True
-                    
+
                     for panel in self.focus:
                         if not isinstance(panel, TaskEditor) or isinstance(panel, TaskCreator):
                             continue
@@ -1562,6 +1562,7 @@ class CursesApplication(Application):
             pass
         self.screen.noutrefresh()
 
+        import pudb; pu.db
         self.tasks.paint()
         self.search_bar.paint()
         self.status_bar.paint()
@@ -2044,7 +2045,7 @@ class CursesApplication(Application):
         if not hasattr(self.focus[-1], 'jump_to'):
             logging.debug(f"{self.focus[-1]} does not have a 'jump_to' function")
             return
-        
+
         self.focus.append(JumpToIndexReader(self, init))
         self.paint(True)
 
