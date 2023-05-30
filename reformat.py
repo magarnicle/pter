@@ -1,4 +1,13 @@
+"""Reformat the todo file to something conformat and sensible.
+If no output file is given, print the reformatted list to stdout.
+
+Usage:
+    reformat INPUT [OUTPUT]
+"""
+from docopt import docopt
 import pytodotxt as txt
+import re
+import sys
 from pathlib import Path
 from datetime import datetime
 from pter.searcher import get_relative_date
@@ -15,7 +24,7 @@ def reformat(todo):
         lambda x: " ".join([f"+{pro}" for pro in sorted(set(x.projects))]),
         lambda x: " ".join([f"@{con}" for con in sorted(set(x.contexts))]),
         lambda x: " ".join([f"tag:{tag}" for tag in sorted(set(x.hashtags))]),
-        lambda x: " ".join(sorted({f"{att}:{val[0]}" for att, val in x._attributes.items()}),)
+        lambda x: " ".join(sorted({f"{att}:{val[0]}" for att, val in x._attributes.items()}, key=lambda x: f"{0 if x.startswith('id:') else 1}{x}"))
     ]
     for task in tasks:
         if "pri" in task.attributes:
@@ -43,16 +52,25 @@ def reformat(todo):
         f'{x.due_date.isoformat() if x.due_date else "9999"}'
         f'{x.bare_description()}'
     )):
-        lines.append(" ".join(map(str, [item(task) for item in FORMAT])).replace("  ", " ").strip(" "))
+        lines.append(re.sub(" +", " ", " ".join(map(str, [item(task) for item in FORMAT])).strip(" ")))
     return lines
 
-def main():
-    todo_file = Path("~/Desktop/tmp/todo.txt").expanduser()
-    todo = txt.TodoTxt(todo_file)
+def main(input_file, output_file=None):
+    todo = txt.TodoTxt(input_file)
     lines = reformat(todo)
     text = "\n".join(lines).strip(" \n")
-    print(text)
-    #todo_file.write_text(text)
+    if output_file:
+        output_file.write_text(text)
+    else:
+        print(text)
 
 if __name__ == "__main__":
-    main()
+    args = docopt(__doc__)
+    input_file = Path(args["INPUT"]).expanduser()
+    output_path = args.get("OUTPUT")
+    if output_path:
+        output_file = Path(output_path).expanduser()
+    else:
+        output_file = None
+    sys.exit(main(input_file, output_file=output_file))
+
