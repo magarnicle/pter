@@ -34,6 +34,7 @@ DEFAULT_CONFIG = {
         },
         common.SETTING_GROUP_SYMBOLS: {
             common.SETTING_ICON_SELECTION: '',
+            common.SETTING_ICON_MULTI_SELECTION: '~',
             common.SETTING_ICON_NOT_DONE: '[ ]',
             common.SETTING_ICON_DONE: '[x]',
             common.SETTING_ICON_OVERFLOW_LEFT: '←',

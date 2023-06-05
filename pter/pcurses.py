@@ -100,11 +100,12 @@ class TaskLineGroup:
 
 
 class TaskLine:
-    def __init__(self, task, source):
+    def __init__(self, task, source, multi_selected = False):
         self.elements = {}
         self.task = task
         self.source = source
         self._due = None
+        self.multi_selected = multi_selected
 
     def add(self, kind, *args, **kwargs):
         self.elements[kind] = TaskLineElement(*args, **kwargs)
@@ -161,6 +162,11 @@ class TaskLineSelectionIcon(TaskLineElement):
     def __init__(self, content):
         super().__init__(content, space_around=False)
         self.name = common.TF_SELECTION
+
+class TaskLineMultiSelectionIcon(TaskLineElement):
+    def __init__(self, content):
+        super().__init__(content, space_around=False)
+        self.name = common.TF_MULTI_SELECTION
 
 
 class StatusBar(Panel):
@@ -304,6 +310,7 @@ class TaskList(RemappedScrollPanel):
 
         self.update_max_width(common.TF_DONE, max(len(self.app.done_marker[0]), len(self.app.done_marker[1])))
         self.update_max_width(common.TF_SELECTION, self.app.selection_indicator)
+        self.update_max_width(common.TF_MULTI_SELECTION, self.app.multi_selection_indicator)
         self.update_max_width(common.TF_TRACKING, self.app.tracking_marker)
         self.update_max_width(common.TF_DUE, max([len(m) for m in self.app.due_marker]))
 
@@ -314,6 +321,10 @@ class TaskList(RemappedScrollPanel):
             # Selection indicator
             if len(self.app.selection_indicator) > 0:
                 line.elements[common.TF_SELECTION] = TaskLineSelectionIcon(self.app.selection_indicator)
+
+            # Selection indicator
+            if len(self.app.multi_selection_indicator) > 0:
+                line.elements[common.TF_MULTI_SELECTION] = TaskLineMultiSelectionIcon(self.app.multi_selection_indicator)
 
             # Item number
             text = str(nr+1)
@@ -445,10 +456,11 @@ class TaskList(RemappedScrollPanel):
             baseattrs = common.SETTING_COL_DUE_TODAY
         if is_tracked:
             baseattrs = common.SETTING_COL_TRACKING
-
         def print_element(y, x, maxwidth, element, align, extra):
             cut_off = False
             if isinstance(element, TaskLineSelectionIcon) and not is_selected:
+                elem = ''
+            elif isinstance(element, TaskLineMultiSelectionIcon) and not taskline.multi_selected:
                 elem = ''
             elif isinstance(element, TaskLineGroup):
                 return print_group(y, x, maxwidth, element, align, extra)
@@ -1244,6 +1256,8 @@ class CursesApplication(Application):
                                     common.SETTING_USE_COLORS)
         self.selection_indicator = utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
                                                           common.SETTING_ICON_SELECTION))
+        self.multi_selection_indicator = utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
+                                                          common.SETTING_ICON_MULTI_SELECTION))
 
         # delegation configuration
         self.delegation_marker = self.conf.get(common.SETTING_GROUP_GENERAL,
@@ -1424,7 +1438,6 @@ class CursesApplication(Application):
         self.status_bar = None
         self.help_bar = None
         self.tasks = None
-        self.multi_selection = []
         self.focus = []
 
         self.load_key_configuration()
@@ -1562,7 +1575,6 @@ class CursesApplication(Application):
             pass
         self.screen.noutrefresh()
 
-        import pudb; pu.db
         self.tasks.paint()
         self.search_bar.paint()
         self.status_bar.paint()
@@ -2315,10 +2327,14 @@ class CursesApplication(Application):
         task = self.tasks.selected_item
         if task is None:
             return
-        self.multi_selection.append(task)
-        # No duplicates
-        self.multi_selection = list(set(self.multi_selection))
-        logging.debug(f"added {task} to multi-selections {self.multi_selection}")
+        if task.multi_selected:
+            task.multi_selected = False
+            logging.debug(f"removed {task} from multi-selection")
+        else:
+            task.multi_selected = True
+            logging.debug(f"added {task} to multi-selection")
+        import pudb; pu.db
+        self.tasks.paint(True)
 
 
 def parse_key_sequence(text):

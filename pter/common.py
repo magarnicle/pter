@@ -31,7 +31,7 @@ DEFAULT_TRASHFILE = CONFIGDIR / "trash.txt"
 
 URL_RE = re.compile(r'([A-Za-z][A-Za-z0-9+\-.]*)://([^ ]+)')
 
-DEFAULT_TASK_FORMAT = '{selection: >} {nr: >} {done} {tracking }{due }{(pri) }{description}'
+DEFAULT_TASK_FORMAT = '{multi-selection}{selection: >} {nr: >} {done} {tracking }{due }{(pri) }{description}'
 ATTR_TRACKING = 'tracking'
 ATTR_T = 't'
 ATTR_DUE = 'due'
@@ -92,6 +92,7 @@ SETTING_DELETE_IS = 'delete-is'
 SETTING_TRASHFILE = 'trash-file'
 SETTING_INFO_TIMEOUT = 'info-timeout'
 SETTING_ICON_SELECTION = 'selection'
+SETTING_ICON_MULTI_SELECTION = 'multi-selection'
 SETTING_ICON_NOT_DONE = 'not-done'
 SETTING_ICON_DONE = 'done'
 SETTING_ICON_OVERFLOW_LEFT = 'overflow-left'
@@ -142,6 +143,7 @@ SETTING_GK_SET_PRIOD = 'prio-d'
 SETTING_GK_MULTI_SELECT = 'multi-select'
 
 TF_SELECTION = 'selection'
+TF_MULTI_SELECTION = 'multi-selection'
 TF_NUMBER = 'nr'
 TF_DESCRIPTION = 'description'
 TF_DONE = 'done'
