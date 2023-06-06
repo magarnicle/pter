@@ -1204,6 +1204,20 @@ class JumpToIndexReader(RemappedInputLine):
         self.app.status_bar.paint(True)
         self.app.focus[-1].paint(True)
 
+def multi_select(function):
+    """Apply the action to any multi-selected tasks. If there are none, apply
+    to the selected task."""
+
+    def wrapper(app, *args, **kwargs):
+        multi_selected = [task_line for task_line in app.tasks.items if task_line.multi_selected]
+        if multi_selected:
+            for task in multi_selected:
+                app.tasks.jump_to(task)
+                function(app, *args, **kwargs)
+        else:
+            function(app, *args, **kwargs)
+    return wrapper
+
 
 class CursesApplication(Application):
     def __init__(self, sources, conf, initial_search):
@@ -2012,6 +2026,7 @@ class CursesApplication(Application):
         searches[name] = self.search.text
         utils.save_searches(searches)
 
+    @multi_select
     def do_edit_task(self):
         if self.tasks.selected_item is None:
             self.error(tr("No task selected"))
@@ -2019,6 +2034,7 @@ class CursesApplication(Application):
         self.focus.append(TaskEditor(self.tasks, self.tasks.selected_item))
         self.paint()
 
+    @multi_select
     def do_edit_task_external(self):
         task = self.tasks.selected_item
         if task is None:
@@ -2061,6 +2077,7 @@ class CursesApplication(Application):
         self.focus.append(JumpToIndexReader(self, init))
         self.paint(True)
 
+    @multi_select
     def do_open_url(self):
         task = self.tasks.selected_item
         if task is None:
@@ -2093,6 +2110,7 @@ class CursesApplication(Application):
         else:
             webbrowser.open(urls[0])
 
+    @multi_select
     def do_toggle_tracking(self):
         if self.tasks.selected_item is None:
             return
@@ -2102,6 +2120,7 @@ class CursesApplication(Application):
             self.tasks.jump_to(task)
             self.tasks.paint_item(self.tasks.selected_item)
 
+    @multi_select
     def do_toggle_done(self):
         if self.tasks.selected_item is None:
             return
@@ -2110,6 +2129,7 @@ class CursesApplication(Application):
         if success:
             self.tasks.paint(True)
 
+    @multi_select
     def do_toggle_hidden(self):
         if self.tasks.selected_item is None:
             return
@@ -2118,6 +2138,7 @@ class CursesApplication(Application):
         if success:
             self.tasks.paint(True)
 
+    @multi_select
     def do_prio_up(self):
         if self.tasks.selected_item is None:
             return
@@ -2126,6 +2147,7 @@ class CursesApplication(Application):
         if success:
             self.tasks.paint(True)
 
+    @multi_select
     def do_prio_down(self):
         if self.tasks.selected_item is None:
             return
@@ -2134,6 +2156,7 @@ class CursesApplication(Application):
         if success:
             self.tasks.paint(True)
 
+    @multi_select
     def do_set_prio(self, prio):
         if self.tasks.selected_item is None:
             return
@@ -2149,6 +2172,7 @@ class CursesApplication(Application):
         self.focus[-1].move(0, 0)
         self.paint(True)
 
+    @multi_select
     def do_delegate(self):
         task = self.tasks.selected_item
         if task is None:
@@ -2178,6 +2202,7 @@ class CursesApplication(Application):
     def do_refresh_screen(self):
         self.paint(True)
 
+    @multi_select
     def do_show_related(self):
         task = self.tasks.selected_item
         if task is None:
@@ -2257,6 +2282,7 @@ class CursesApplication(Application):
                                        numbered=True))
             self.paint(True)
 
+    @multi_select
     def do_delete(self):
         taskline = self.tasks.selected_item
         if taskline is None:
@@ -2333,7 +2359,6 @@ class CursesApplication(Application):
         else:
             task.multi_selected = True
             logging.debug(f"added {task} to multi-selection")
-        import pudb; pu.db
         self.tasks.paint(True)
 
 
@@ -2417,3 +2442,4 @@ def run_cursesui(args):
             raise exception
 
     return success
+
