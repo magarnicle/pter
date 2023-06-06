@@ -2034,8 +2034,10 @@ class CursesApplication(Application):
         self.focus.append(TaskEditor(self.tasks, self.tasks.selected_item))
         self.paint()
 
-    @multi_select
     def do_edit_task_external(self):
+        multi_selected = [task_line for task_line in self.tasks.items if task_line.multi_selected]
+        if multi_selected:
+            return self.do_edit_task_external_multi(multi_selected)
         task = self.tasks.selected_item
         if task is None:
             self.error(tr("No task selected"))
@@ -2047,19 +2049,45 @@ class CursesApplication(Application):
             return
 
         with tempfile.NamedTemporaryFile("w+t", encoding="utf-8", suffix='.txt') as fh:
+            tempname = fh.name
             fh.write(str(task.task))
             fh.flush()
             with ShellContext(self.screen, True):
                 subprocess.run(editor + [fh.name])
-
-            # only actually apply changes when editing the 'extra' tags
-            fh.flush()
-            fh.seek(0)
-            tasktext = fh.read()
+            with open(tempname) as updated_fh:
+                tasktext = updated_fh.read()
 
         tasktext = utils.dehumanize_dates(utils.auto_task_id(self.sources, tasktext))
         if tasktext != str(task.task):
             self.modify_task(task, lambda t: t.parse(tasktext))
+
+        self.paint(True)
+
+    def do_edit_task_external_multi(self, tasks):
+        if not tasks:
+            self.error(tr("No tasks selected"))
+            return
+
+        editor = self.resolve_editor()
+        if editor is None:
+            self.error(tr("Could not determine your external text editor"))
+            return
+
+        with tempfile.NamedTemporaryFile("w+t", encoding="utf-8", suffix='.txt') as fh:
+            tempname = fh.name
+            for task in tasks:
+                fh.write(str(task.task) + "\n")
+            fh.flush()
+            with ShellContext(self.screen, True):
+                subprocess.run(editor + [fh.name])
+            with open(tempname) as updated_fh:
+                tasktexts = updated_fh.readlines()
+
+        for idx, tasktext in enumerate([text.strip() for text in tasktexts if text]):
+            task = tasks[idx]
+            tasktext = utils.dehumanize_dates(utils.auto_task_id(self.sources, tasktext))
+            if tasktext != str(task.task):
+                self.modify_task(task, lambda t: t.parse(tasktext))
 
         self.paint(True)
 
