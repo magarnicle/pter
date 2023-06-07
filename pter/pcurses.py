@@ -76,6 +76,7 @@ SHORT_NAMES = {'quit': 'Quit',
                'prio-up': 'Increase priority',
                'prio-down': 'Decrease priority',
                'multi-select': 'Add to multiple selection',
+               'apply-multi-select': 'Perform the next action to all multi-selected tasks (not the current highlighted task)',
                }
 
 
@@ -322,7 +323,7 @@ class TaskList(RemappedScrollPanel):
             if len(self.app.selection_indicator) > 0:
                 line.elements[common.TF_SELECTION] = TaskLineSelectionIcon(self.app.selection_indicator)
 
-            # Selection indicator
+            # Multi-selection indicator
             if len(self.app.multi_selection_indicator) > 0:
                 line.elements[common.TF_MULTI_SELECTION] = TaskLineMultiSelectionIcon(self.app.multi_selection_indicator)
 
@@ -809,6 +810,7 @@ class SearchBar(RemappedInputLine):
         self.unfocus()
 
     def unfocus(self):
+        self.app.apply_to_multi_selection = False
         self.cursor_changed = False
         self.app.show_cursor(False)
         self.app.focus.pop(-1)
@@ -1205,17 +1207,24 @@ class JumpToIndexReader(RemappedInputLine):
         self.app.focus[-1].paint(True)
 
 def multi_select(function):
-    """Apply the action to any multi-selected tasks. If there are none, apply
-    to the selected task."""
+    """Perform an action, but if we've just pressed ; apply the action to any multi-selected tasks
+    instead of the selected task."""
 
     def wrapper(app, *args, **kwargs):
-        multi_selected = [task_line for task_line in app.tasks.items if task_line.multi_selected]
-        if multi_selected:
-            for task in multi_selected:
-                app.tasks.jump_to(task)
+        try:
+            if app.apply_to_multi_selection:
+                multi_selected = [task_line for task_line in app.tasks.items if task_line.multi_selected]
+                if not multi_selected:
+                    logging.error("No tasks multi-selected.")
+                for task in multi_selected:
+                    app.tasks.jump_to(task)
+                    function(app, *args, **kwargs)
+            else:
                 function(app, *args, **kwargs)
-        else:
-            function(app, *args, **kwargs)
+        except Exception:
+            raise
+        finally:
+            app.apply_to_multi_selection = False
     return wrapper
 
 
@@ -1229,6 +1238,7 @@ class CursesApplication(Application):
         self.color_cache = {}
         self.all_tasks = []
         self.initial_search = initial_search
+        self.apply_to_multi_selection = False
 
         # sorting and searching
         self.sort_order = utils.build_sort_order(common.DEFAULT_SORT_ORDER)
@@ -1384,6 +1394,7 @@ class CursesApplication(Application):
             ('-',): 'prio-down',
             ('=',): 'prio-none',
             ('a',): 'multi-select',
+            (';',): 'apply-multi-select',
             }
         self.editor_key_mapping = {
             '^C': 'cancel',
@@ -1446,6 +1457,7 @@ class CursesApplication(Application):
             'prio-c': lambda: self.do_set_prio('C'),
             'prio-d': lambda: self.do_set_prio('D'),
             'multi-select': self.do_multi_select,
+            'apply-multi-select': self.do_apply_multi_select,
             }
 
         self.search_bar = None
@@ -1463,6 +1475,8 @@ class CursesApplication(Application):
             self.update_color_pairs()
         elif len(self.selection_indicator) == 0:
             self.selection_indicator = '>'
+        if len(self.multi_selection_indicator) == 0:
+            self.multi_selection_indicator = '*'
 
         self.tasks = TaskList(self)
         self.search_bar = SearchBar(self, 1, (0, 0))
@@ -1621,6 +1635,14 @@ class CursesApplication(Application):
 
     def apply_search(self):
         current = self.tasks.selected_item
+        # Clear multi-selection
+        repaint = False
+        for task_line in self.tasks.items:
+            if task_line.multi_selected:
+                repaint = True
+                task_line.multi_selected = False
+        if repaint:
+            self.tasks.paint()
         self.tasks.tasks = [(task, source) for task, source in self.all_tasks
                                            if self.search.match(task)]
         self.update_sorting()
@@ -2388,6 +2410,10 @@ class CursesApplication(Application):
             task.multi_selected = True
             logging.debug(f"added {task} to multi-selection")
         self.tasks.paint(True)
+
+    def do_apply_multi_select(self):
+        self.apply_to_multi_selection = True
+        logging.error("Next action will apply to all multi-selected tasks")
 
 
 def parse_key_sequence(text):
