@@ -810,7 +810,6 @@ class SearchBar(RemappedInputLine):
         self.unfocus()
 
     def unfocus(self):
-        self.app.apply_to_multi_selection = False
         self.cursor_changed = False
         self.app.show_cursor(False)
         self.app.focus.pop(-1)
@@ -1565,9 +1564,12 @@ class CursesApplication(Application):
                 # clear status bar
                 if len(self.status_bar.text) > 0:
                     self.info('')
+                if self.apply_to_multi_selection:
+                    self.info(tr("Next action will apply to all multi-selected tasks"))
             elif len(self.key_sequence) > 0 and self.key_mapping.get((str(key),), None) == 'cancel':
                 self.key_sequence = []
                 self.info('')
+                self.apply_to_multi_selection = False
                 logging.debug("Clearing key sequence")
             elif key != Key.TIMEOUT:
                 kseq = tuple(self.key_sequence + [str(key)])
@@ -1579,6 +1581,8 @@ class CursesApplication(Application):
                     if fnc in self.functions:
                         logging.debug(f"Calling {fnc}")
                         self.functions[fnc]()
+                    if fnc != "apply-multi-select":
+                        self.apply_to_multi_selection = False
                 elif any(k[:len(kseq)] == kseq for k in self.key_mapping.keys()):
                     self.key_sequence_info(''.join(kseq))
                     self.key_sequence = list(kseq)
@@ -2413,7 +2417,7 @@ class CursesApplication(Application):
 
     def do_apply_multi_select(self):
         self.apply_to_multi_selection = True
-        logging.error("Next action will apply to all multi-selected tasks")
+        self.info(tr("Next action will apply to all multi-selected tasks"))
 
 
 def parse_key_sequence(text):
