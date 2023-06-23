@@ -12,6 +12,7 @@ from pathlib import Path
 from datetime import datetime
 from pter.searcher import get_relative_date
 
+
 def reformat(todo):
     tasks = todo.parse()
     today = datetime.now().date()
@@ -24,7 +25,12 @@ def reformat(todo):
         lambda x: " ".join([f"+{pro}" for pro in sorted(set(x.projects))]),
         lambda x: " ".join([f"@{con}" for con in sorted(set(x.contexts))]),
         lambda x: " ".join([f"tag:{tag}" for tag in sorted(set(x.hashtags))]),
-        lambda x: " ".join(sorted({f"{att}:{val[0]}" for att, val in x._attributes.items()}, key=lambda x: f"{0 if x.startswith('id:') else 1}{x}"))
+        lambda x: " ".join(
+            sorted(
+                {f"{att}:{val[0]}" for att, val in x._attributes.items()},
+                key=lambda x: f"{0 if x.startswith('id:') else 1}{x}",
+            )
+        ),
     ]
     for task in tasks:
         if "pri" in task.attributes:
@@ -37,23 +43,37 @@ def reformat(todo):
             elif not task.attributes["rec"][0].startswith("+"):
                 prev_due_date = task.due_date
                 while True:
-                    next_due_date = get_relative_date(task.attributes["rec"][0], None, prev_due_date)
+                    next_due_date = get_relative_date(
+                        task.attributes["rec"][0], None, prev_due_date
+                    )
                     if next_due_date > today:
                         break
                     prev_due_date = next_due_date
                 if prev_due_date != task.due_date:
-                    task.replace_attribute("due", task.due_date.isoformat(), prev_due_date.isoformat())
+                    task.replace_attribute(
+                        "due", task.due_date.isoformat(), prev_due_date.isoformat()
+                    )
 
     lines = []
-    for task in sorted(tasks, key=lambda x: (
-        f'{1 if x.is_completed else 0}'
-        f'{x.priority or "Z"}'
-        f'{x.completion_date.isoformat() if x.completion_date else "9999"}'
-        f'{x.due_date.isoformat() if x.due_date else "9999"}'
-        f'{x.bare_description()}'
-    )):
-        lines.append(re.sub(" +", " ", " ".join(map(str, [item(task) for item in FORMAT])).strip(" ")))
+    for task in sorted(
+        tasks,
+        key=lambda x: (
+            f"{1 if x.is_completed else 0}"
+            f'{x.priority or "Z"}'
+            f'{x.completion_date.isoformat() if x.completion_date else "9999"}'
+            f'{x.due_date.isoformat() if x.due_date else "9999"}'
+            f"{x.bare_description()}"
+        ),
+    ):
+        lines.append(
+            re.sub(
+                " +",
+                " ",
+                " ".join(map(str, [item(task) for item in FORMAT])).strip(" "),
+            )
+        )
     return lines
+
 
 def main(input_file, output_file=None):
     todo = txt.TodoTxt(input_file)
@@ -64,6 +84,7 @@ def main(input_file, output_file=None):
     else:
         print(text)
 
+
 if __name__ == "__main__":
     args = docopt(__doc__)
     input_file = Path(args["INPUT"]).expanduser()
@@ -73,4 +94,3 @@ if __name__ == "__main__":
     else:
         output_file = None
     sys.exit(main(input_file, output_file=output_file))
-
