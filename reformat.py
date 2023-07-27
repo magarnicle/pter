@@ -40,7 +40,7 @@ def reformat(todo):
         if not task.is_completed and "rec" in task.attributes:
             if not task.due_date:
                 task.add_attribute("due", today.isoformat())
-            elif not task.attributes["rec"][0].startswith("+"):
+            elif task.attributes["rec"][0].startswith("+"):
                 prev_due_date = task.due_date
                 while True:
                     next_due_date = get_relative_date(
