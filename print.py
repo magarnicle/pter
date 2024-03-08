@@ -2,8 +2,12 @@
 If no output file is given, print the reformatted list to stdout.
 
 Usage:
-    reformat [--archive=ARCHIVE] INPUT [OUTPUT]
+    print [-f FIELDS] INPUT
+
+Options:
+    -f, --fields=FIELDS     Comma-separated list of fields, defaults to all available: complete,priority,completion_date,creation_date,description,projects,contexts,hashtags,tags
 """
+
 from docopt import docopt
 import pytodotxt as txt
 import re
@@ -13,9 +17,20 @@ from datetime import datetime
 from pter.searcher import get_relative_date
 
 
-def reformat(todo):
+def reformat(todo, output_fields):
     tasks = todo.parse()
     today = datetime.now().date()
+    FIELDS_INDEX = {
+        "complete": 0,
+        "priority": 1,
+        "completion_date": 2,
+        "creation_date": 3,
+        "description": 4,
+        "projects": 5,
+        "contexts": 6,
+        "hashtags": 7,
+        "tags": 8,
+    }
     FORMAT = [
         lambda x: "x" if x.is_completed else "",
         lambda x: f"({x.priority})" if x.priority else "",
@@ -40,7 +55,7 @@ def reformat(todo):
         if not task.is_completed and "rec" in task.attributes:
             if not task.due_date:
                 task.add_attribute("due", today.isoformat())
-            #elif task.attributes["rec"][0].startswith("+"):
+            # elif task.attributes["rec"][0].startswith("+"):
             else:
                 prev_due_date = task.due_date
                 while True:
@@ -56,6 +71,15 @@ def reformat(todo):
                     )
 
     lines = []
+    if output_fields:
+        fields = [
+            idx
+            for name, idx in FIELDS_INDEX.items()
+            if name in output_fields.split(",")
+        ]
+    else:
+        fields = FIELDS_INDEX.values()
+    selected_fields = [field for idx, field in enumerate(FORMAT) if idx in fields]
     for task in sorted(
         tasks,
         key=lambda x: (
@@ -70,28 +94,20 @@ def reformat(todo):
             re.sub(
                 " +",
                 " ",
-                " ".join(map(str, [item(task) for item in FORMAT])).strip(" "),
+                " ".join(map(str, [item(task) for item in selected_fields])).strip(" "),
             )
         )
     return lines
 
 
-def main(input_file, output_file=None):
+def main(input_file, fields=None):
     todo = txt.TodoTxt(input_file)
-    lines = reformat(todo)
+    lines = reformat(todo, fields)
     text = "\n".join(lines).strip(" \n")
-    if output_file:
-        output_file.write_text(text)
-    else:
-        print(text)
+    print(text)
 
 
 if __name__ == "__main__":
     args = docopt(__doc__)
     input_file = Path(args["INPUT"]).expanduser()
-    output_path = args.get("OUTPUT")
-    if output_path:
-        output_file = Path(output_path).expanduser()
-    else:
-        output_file = None
-    sys.exit(main(input_file, output_file=output_file))
+    sys.exit(main(input_file, args.get("--fields")))

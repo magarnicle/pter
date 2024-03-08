@@ -77,6 +77,7 @@ SHORT_NAMES = {'quit': 'Quit',
                'prio-down': 'Decrease priority',
                'multi-select': 'Add to multiple selection',
                'apply-multi-select': 'Perform the next action to all multi-selected tasks (not the current highlighted task)',
+               'pipe-out': 'Pipe to-do entry to external command, replacing this line with stdout',
                }
 
 
@@ -1394,6 +1395,7 @@ class CursesApplication(Application):
             ('=',): 'prio-none',
             ('a',): 'multi-select',
             (';',): 'apply-multi-select',
+            ('|',): 'pipe-out',
             }
         self.editor_key_mapping = {
             '^C': 'cancel',
@@ -1457,6 +1459,7 @@ class CursesApplication(Application):
             'prio-d': lambda: self.do_set_prio('D'),
             'multi-select': self.do_multi_select,
             'apply-multi-select': self.do_apply_multi_select,
+            'pipe-out': self.do_pipe_out,
             }
 
         self.search_bar = None
@@ -2419,6 +2422,18 @@ class CursesApplication(Application):
         self.apply_to_multi_selection = True
         self.info(tr("Next action will apply to all multi-selected tasks"))
 
+
+    @multi_select
+    def do_pipe_out(self):
+        command = self.config.pipe_out_command
+        try:
+            proc = subprocess.run(command)
+        except Exception:
+            pass
+        if proc.exit_code == 0:
+            std_out = proc.stdout
+            self = std_out
+        self.tasks.paint(True)
 
 def parse_key_sequence(text):
     sequence = []
