@@ -14,7 +14,14 @@ import shutil
 
 from pytodotxt import TodoTxt, Task
 
-from cursedspace import Application, Panel, ScrollPanel, InputLine, ShellContext, Completion
+from cursedspace import (
+    Application,
+    Panel,
+    ScrollPanel,
+    InputLine,
+    ShellContext,
+    Completion,
+)
 
 from pter import common
 from pter import utils
@@ -24,61 +31,62 @@ from pter.key import Key
 from pter.tr import tr
 
 
-SHORT_NAMES = {'quit': 'Quit',
-               'cancel': 'Cancel',
-               'select-item': 'Select',
-               'next-item': 'Next item',
-               'prev-item': 'Previous item',
-               'page-up': 'One page up',
-               'page-down': 'One page down',
-               'search': 'Search',
-               'open-url': 'Open URL',
-               'load-template': 'Load task template',
-               'save-template': 'Save task as template',
-               'load-search': 'Load search',
-               'save-search': 'Save search',
-               'search-context': 'Search for context of this task',
-               'search-project': 'Search for project of this task',
-               'clear-search': 'Clear the search',
-               'first-item': 'First item',
-               'last-item': 'Last item',
-               'edit-task': 'Edit task',
-               'create-task': 'New task',
-               'jump-to': 'Jump to item',
-               'toggle-hidden': 'Set/unset hidden',
-               'toggle-done': 'Set/unset done',
-               'toggle-tracking': 'Start/stop tracking',
-               'show-help': 'Help',
-               'open-manual': 'Read the manual',
-               'go-left': 'Go one character to the left',
-               'go-right': 'Go one character to the right',
-               'go-bol': 'Go to start of line',
-               'go-eol': 'Go to end of line',
-               'goto-empty': 'Goto the next empty key',
-               'del-left': 'Delete to the left',
-               'del-right': 'Delete to the right',
-               'del-to-bol': 'Delete to start of line',
-               'submit-input': 'Apply changes',
-               'select-file': 'Select file',
-               'delegate': 'Delegate task',
-               'delete': 'Delete task',
-               'refresh-screen': 'Refresh screen',
-               'reload-tasks': 'Reload todo files',
-               'comp-next': 'Next completion option',
-               'comp-prev': 'Previous completion option',
-               'comp-use': 'Use selected completion option',
-               'comp-close': 'Close the completion list',
-               'prio-a': 'Set priority to (A)',
-               'prio-b': 'Set priority to (B)',
-               'prio-c': 'Set priority to (C)',
-               'prio-d': 'Set priority to (D)',
-               'prio-none': 'Remove priority',
-               'prio-up': 'Increase priority',
-               'prio-down': 'Decrease priority',
-               'multi-select': 'Add to multiple selection',
-               'apply-multi-select': 'Perform the next action to all multi-selected tasks (not the current highlighted task)',
-               'pipe-out': 'Pipe to-do entry to external command, replacing this line with stdout',
-               }
+SHORT_NAMES = {
+    "quit": "Quit",
+    "cancel": "Cancel",
+    "select-item": "Select",
+    "next-item": "Next item",
+    "prev-item": "Previous item",
+    "page-up": "One page up",
+    "page-down": "One page down",
+    "search": "Search",
+    "open-url": "Open URL",
+    "load-template": "Load task template",
+    "save-template": "Save task as template",
+    "load-search": "Load search",
+    "save-search": "Save search",
+    "search-context": "Search for context of this task",
+    "search-project": "Search for project of this task",
+    "clear-search": "Clear the search",
+    "first-item": "First item",
+    "last-item": "Last item",
+    "edit-task": "Edit task",
+    "create-task": "New task",
+    "jump-to": "Jump to item",
+    "toggle-hidden": "Set/unset hidden",
+    "toggle-done": "Set/unset done",
+    "toggle-tracking": "Start/stop tracking",
+    "show-help": "Help",
+    "open-manual": "Read the manual",
+    "go-left": "Go one character to the left",
+    "go-right": "Go one character to the right",
+    "go-bol": "Go to start of line",
+    "go-eol": "Go to end of line",
+    "goto-empty": "Goto the next empty key",
+    "del-left": "Delete to the left",
+    "del-right": "Delete to the right",
+    "del-to-bol": "Delete to start of line",
+    "submit-input": "Apply changes",
+    "select-file": "Select file",
+    "delegate": "Delegate task",
+    "delete": "Delete task",
+    "refresh-screen": "Refresh screen",
+    "reload-tasks": "Reload todo files",
+    "comp-next": "Next completion option",
+    "comp-prev": "Previous completion option",
+    "comp-use": "Use selected completion option",
+    "comp-close": "Close the completion list",
+    "prio-a": "Set priority to (A)",
+    "prio-b": "Set priority to (B)",
+    "prio-c": "Set priority to (C)",
+    "prio-d": "Set priority to (D)",
+    "prio-none": "Remove priority",
+    "prio-up": "Increase priority",
+    "prio-down": "Decrease priority",
+    "multi-select": "Add to multiple selection",
+    "apply-multi-select": "Perform the next action to all multi-selected tasks (not the current highlighted task)",
+    "pipe-out": "Pipe to-do entry to stdin of external command, replacing this line with stdout",
+}
 
 
 class Color:
@@ -102,7 +110,7 @@ class TaskLineGroup:
 
 
 class TaskLine:
-    def __init__(self, task, source, multi_selected = False):
+    def __init__(self, task, source, multi_selected=False):
         self.elements = {}
         self.task = task
         self.source = source
@@ -125,21 +133,27 @@ class TaskLine:
 
     @property
     def is_overdue(self):
-        return not self.task.is_completed and \
-               self.due is not None and \
-               self.due < datetime.date.today()
+        return (
+            not self.task.is_completed
+            and self.due is not None
+            and self.due < datetime.date.today()
+        )
 
     @property
     def is_due_tomorrow(self):
-        return not self.task.is_completed and \
-               self.due is not None and \
-               self.due == datetime.date.today() + datetime.timedelta(days=1)
+        return (
+            not self.task.is_completed
+            and self.due is not None
+            and self.due == datetime.date.today() + datetime.timedelta(days=1)
+        )
 
     @property
     def is_due_today(self):
-        return not self.task.is_completed and \
-               self.due is not None and \
-               self.due == datetime.date.today()
+        return (
+            not self.task.is_completed
+            and self.due is not None
+            and self.due == datetime.date.today()
+        )
 
 
 class TaskLineDescription(TaskLineGroup):
@@ -165,6 +179,7 @@ class TaskLineSelectionIcon(TaskLineElement):
         super().__init__(content, space_around=False)
         self.name = common.TF_SELECTION
 
+
 class TaskLineMultiSelectionIcon(TaskLineElement):
     def __init__(self, content):
         super().__init__(content, space_around=False)
@@ -177,15 +192,22 @@ class StatusBar(Panel):
         self.text = ""
         self.color = None
         self.expire = datetime.datetime.max
-        self.blank_after = max(1, app.conf.number(common.SETTING_GROUP_GENERAL,
-                                                  common.SETTING_INFO_TIMEOUT,
-                                                  common.DEFAULT_INFO_TIMEOUT))
+        self.blank_after = max(
+            1,
+            app.conf.number(
+                common.SETTING_GROUP_GENERAL,
+                common.SETTING_INFO_TIMEOUT,
+                common.DEFAULT_INFO_TIMEOUT,
+            ),
+        )
 
     def set_text(self, text, color=None, expire=True):
         self.text = text
         self.color = color or common.SETTING_COL_NORMAL
         if expire is True:
-            self.expire = datetime.datetime.now() + datetime.timedelta(seconds=self.blank_after)
+            self.expire = datetime.datetime.now() + datetime.timedelta(
+                seconds=self.blank_after
+            )
         elif isinstance(expire, datetime.datetime):
             self.expire = expire
         else:
@@ -200,16 +222,16 @@ class StatusBar(Panel):
         super().paint(clear)
 
         if self.is_expired():
-            self.text = ''
+            self.text = ""
             self.color = common.SETTING_COL_NORMAL
 
         attr = self.app.color(common.SETTING_COL_NORMAL)
         try:
-            self.win.addstr(0, 0, " "*self.dim[1], attr)
+            self.win.addstr(0, 0, " " * self.dim[1], attr)
         except curses.error:
             pass
         if len(self.text) > 0:
-            self.win.addstr(0, 0, self.text[:self.dim[1]], self.app.color(self.color))
+            self.win.addstr(0, 0, self.text[: self.dim[1]], self.app.color(self.color))
         self.win.noutrefresh()
 
 
@@ -219,27 +241,37 @@ class HelpBar(Panel):
         super().paint(clear)
 
         mapping = self.app.key_mapping
-        actions = ['show-help', 'quit', 'edit-task',
-                   'create-task', 'search', 'load-search', 'save-search',
-                   'toggle-done', 'jump-to', 'next-item', 'prev-item']
+        actions = [
+            "show-help",
+            "quit",
+            "edit-task",
+            "create-task",
+            "search",
+            "load-search",
+            "save-search",
+            "toggle-done",
+            "jump-to",
+            "next-item",
+            "prev-item",
+        ]
 
         if len(self.app.focus) == 0:
             pass
         elif isinstance(self.app.focus[-1], HelpScreen):
-            actions = ['quit', 'cancel', 'refresh-screen']
+            actions = ["quit", "cancel", "refresh-screen"]
         elif isinstance(self.app.focus[-1], Selector):
-            actions = ['cancel', 'select-item']
+            actions = ["cancel", "select-item"]
         elif isinstance(self.app.focus[-1], TaskCreator):
-            actions = ['cancel', 'submit-input']
+            actions = ["cancel", "submit-input"]
             if len(self.app.sources) > 1:
-                actions += ['select-file']
+                actions += ["select-file"]
             mapping = self.app.editor_key_mapping
         elif isinstance(self.app.focus[-1], TaskEditor):
-            actions = ['cancel', 'submit-input']
+            actions = ["cancel", "submit-input"]
             mapping = self.app.editor_key_mapping
 
         try:
-            self.win.addstr(0, 0, " "*self.dim[1])
+            self.win.addstr(0, 0, " " * self.dim[1])
         except curses.error:
             pass
 
@@ -259,7 +291,7 @@ class HelpBar(Panel):
                     keytext.append(tr(Key.SPECIAL[key]))
                 else:
                     keytext.append(tr(key))
-            keytext = ' ' + ''.join(keytext) + ' '
+            keytext = " " + "".join(keytext) + " "
             if x + len(keytext) + len(label) >= self.dim[1]:
                 break
 
@@ -274,24 +306,36 @@ class RemappedScrollPanel(ScrollPanel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.SCROLL_NEXT = [keys[0]
-                            for keys, value in self.app.key_mapping.items()
-                            if value == 'next-item']
-        self.SCROLL_PREVIOUS = [keys[0]
-                                for keys, value in self.app.key_mapping.items()
-                                if value == 'prev-item']
-        self.SCROLL_NEXT_PAGE = [keys[0]
-                                 for keys, value in self.app.key_mapping.items()
-                                 if value == 'page-down']
-        self.SCROLL_PREVIOUS_PAGE = [keys[0]
-                                     for keys, value in self.app.key_mapping.items()
-                                     if value == 'page-up']
-        self.SCROLL_TO_START = [keys[0]
-                                for keys, value in self.app.key_mapping.items()
-                                if value == 'first-item']
-        self.SCROLL_TO_END = [keys[0]
-                              for keys, value in self.app.key_mapping.items()
-                              if value == 'last-item']
+        self.SCROLL_NEXT = [
+            keys[0]
+            for keys, value in self.app.key_mapping.items()
+            if value == "next-item"
+        ]
+        self.SCROLL_PREVIOUS = [
+            keys[0]
+            for keys, value in self.app.key_mapping.items()
+            if value == "prev-item"
+        ]
+        self.SCROLL_NEXT_PAGE = [
+            keys[0]
+            for keys, value in self.app.key_mapping.items()
+            if value == "page-down"
+        ]
+        self.SCROLL_PREVIOUS_PAGE = [
+            keys[0]
+            for keys, value in self.app.key_mapping.items()
+            if value == "page-up"
+        ]
+        self.SCROLL_TO_START = [
+            keys[0]
+            for keys, value in self.app.key_mapping.items()
+            if value == "first-item"
+        ]
+        self.SCROLL_TO_END = [
+            keys[0]
+            for keys, value in self.app.key_mapping.items()
+            if value == "last-item"
+        ]
 
         self.SCROLL_MARGIN = self.app.scroll_margin
 
@@ -310,9 +354,14 @@ class TaskList(RemappedScrollPanel):
 
         today = datetime.date.today()
 
-        self.update_max_width(common.TF_DONE, max(len(self.app.done_marker[0]), len(self.app.done_marker[1])))
+        self.update_max_width(
+            common.TF_DONE,
+            max(len(self.app.done_marker[0]), len(self.app.done_marker[1])),
+        )
         self.update_max_width(common.TF_SELECTION, self.app.selection_indicator)
-        self.update_max_width(common.TF_MULTI_SELECTION, self.app.multi_selection_indicator)
+        self.update_max_width(
+            common.TF_MULTI_SELECTION, self.app.multi_selection_indicator
+        )
         self.update_max_width(common.TF_TRACKING, self.app.tracking_marker)
         self.update_max_width(common.TF_DUE, max([len(m) for m in self.app.due_marker]))
 
@@ -322,14 +371,18 @@ class TaskList(RemappedScrollPanel):
 
             # Selection indicator
             if len(self.app.selection_indicator) > 0:
-                line.elements[common.TF_SELECTION] = TaskLineSelectionIcon(self.app.selection_indicator)
+                line.elements[common.TF_SELECTION] = TaskLineSelectionIcon(
+                    self.app.selection_indicator
+                )
 
             # Multi-selection indicator
             if len(self.app.multi_selection_indicator) > 0:
-                line.elements[common.TF_MULTI_SELECTION] = TaskLineMultiSelectionIcon(self.app.multi_selection_indicator)
+                line.elements[common.TF_MULTI_SELECTION] = TaskLineMultiSelectionIcon(
+                    self.app.multi_selection_indicator
+                )
 
             # Item number
-            text = str(nr+1)
+            text = str(nr + 1)
             line.add(common.TF_NUMBER, text)
             self.update_max_width(common.TF_NUMBER, text)
 
@@ -367,66 +420,74 @@ class TaskList(RemappedScrollPanel):
 
                 if not task.is_completed:
                     if line.due < today:
-                        line.add(common.TF_DUE,
-                                 self.app.due_marker[0],
-                                 common.SETTING_COL_OVERDUE)
+                        line.add(
+                            common.TF_DUE,
+                            self.app.due_marker[0],
+                            common.SETTING_COL_OVERDUE,
+                        )
                     elif line.due == today:
-                        line.add(common.TF_DUE,
-                                 self.app.due_marker[1],
-                                 common.SETTING_COL_DUE_TODAY)
+                        line.add(
+                            common.TF_DUE,
+                            self.app.due_marker[1],
+                            common.SETTING_COL_DUE_TODAY,
+                        )
                     elif line.due == today + datetime.timedelta(days=1):
-                        line.add(common.TF_DUE,
-                                 self.app.due_marker[2],
-                                 common.SETTING_COL_DUE_TOMORROW)
+                        line.add(
+                            common.TF_DUE,
+                            self.app.due_marker[2],
+                            common.SETTING_COL_DUE_TOMORROW,
+                        )
 
             # Priority marker
             if task.priority is not None:
                 pri = task.priority.upper()
                 attrs = None
-                if pri == 'A':
+                if pri == "A":
                     attrs = common.SETTING_COL_PRI_A
-                elif pri == 'B':
+                elif pri == "B":
                     attrs = common.SETTING_COL_PRI_B
-                elif pri == 'C':
+                elif pri == "C":
                     attrs = common.SETTING_COL_PRI_C
                 line.add(common.TF_PRIORITY, f"{pri}", attrs)
-                self.update_max_width(common.TF_PRIORITY, '(A)')
+                self.update_max_width(common.TF_PRIORITY, "(A)")
 
             # Description
             description = TaskLineDescription()
             if task.description is not None:
-                for word in task.description.split(' '):
+                for word in task.description.split(" "):
                     if len(word) == 0:
                         continue
 
                     attr = None
 
-                    if word.startswith('@') and len(word) > 1:
+                    if word.startswith("@") and len(word) > 1:
                         attr = common.SETTING_COL_CONTEXT
-                    elif word.startswith('+') and len(word) > 1:
+                    elif word.startswith("+") and len(word) > 1:
                         attr = common.SETTING_COL_PROJECT
-                    elif ':' in word:
-                        key, value = word.split(':', 1)
-                        if 'hl:' + key in self.app.colors:
-                            attr = 'hl:' + key
+                    elif ":" in word:
+                        key, value = word.split(":", 1)
+                        if "hl:" + key in self.app.colors:
+                            attr = "hl:" + key
                         if key in [common.ATTR_T, common.ATTR_DUE]:
-                            word = key + ':' + self.app.date_as_str(value, key)
+                            word = key + ":" + self.app.date_as_str(value, key)
                         if key == common.ATTR_PRI:
                             attr = None
                             value = value.upper()
-                            if value == 'A':
+                            if value == "A":
                                 attr = common.SETTING_COL_PRI_A
-                            elif value == 'B':
+                            elif value == "B":
                                 attr = common.SETTING_COL_PRI_B
-                            elif value == 'C':
+                            elif value == "C":
                                 attr = common.SETTING_COL_PRI_C
                     description.append(word, attr, space_around=True)
             line.elements[common.TF_DESCRIPTION] = description
-            self.update_max_width(common.TF_DESCRIPTION,
-                                  ' '.join([e.content for e in description.elements]))
+            self.update_max_width(
+                common.TF_DESCRIPTION,
+                " ".join([e.content for e in description.elements]),
+            )
 
             self.items.append(line)
-        self.cursor = min(self.cursor, len(self.items)-1)
+        self.cursor = min(self.cursor, len(self.items) - 1)
 
     def update_max_width(self, name, textlen):
         if name not in self.max_widths:
@@ -458,12 +519,16 @@ class TaskList(RemappedScrollPanel):
             baseattrs = common.SETTING_COL_DUE_TODAY
         if is_tracked:
             baseattrs = common.SETTING_COL_TRACKING
+
         def print_element(y, x, maxwidth, element, align, extra):
             cut_off = False
             if isinstance(element, TaskLineSelectionIcon) and not is_selected:
-                elem = ''
-            elif isinstance(element, TaskLineMultiSelectionIcon) and not taskline.multi_selected:
-                elem = ''
+                elem = ""
+            elif (
+                isinstance(element, TaskLineMultiSelectionIcon)
+                and not taskline.multi_selected
+            ):
+                elem = ""
             elif isinstance(element, TaskLineGroup):
                 return print_group(y, x, maxwidth, element, align, extra)
             elif isinstance(element, str):
@@ -481,7 +546,7 @@ class TaskList(RemappedScrollPanel):
                 width = max(0, width)
                 elem = f"{elem:{align}{width}}"
             elif len(elem) == 0:
-                return ''
+                return ""
 
             if extra_left is not None:
                 elem = extra_left + elem
@@ -495,77 +560,107 @@ class TaskList(RemappedScrollPanel):
                 elem = elem[:maxwidth]
 
             try:
-                self.win.addstr(y, x, elem, self.app.color(element.color, is_selected, baseattrs))
+                self.win.addstr(
+                    y, x, elem, self.app.color(element.color, is_selected, baseattrs)
+                )
             except curses.error:
                 pass
 
             if cut_off:
                 attrs = common.SETTING_COL_OVERFLOW
                 try:
-                    self.win.addstr(y, x+maxwidth-len(self.app.overflow_marker[1]),
-                                    self.app.overflow_marker[1],
-                                    self.app.color(attrs, is_selected, baseattrs))
+                    self.win.addstr(
+                        y,
+                        x + maxwidth - len(self.app.overflow_marker[1]),
+                        self.app.overflow_marker[1],
+                        self.app.color(attrs, is_selected, baseattrs),
+                    )
                 except curses.error:
                     pass
             return elem
 
         def print_group(y, x, maxwidth, group, align, extra):
-            line = ''
+            line = ""
 
             if extra is not None and extra[0] is not None:
-                self.win.addstr(y, x + len(line), extra[0], self.app.color(baseattrs, is_selected))
+                self.win.addstr(
+                    y, x + len(line), extra[0], self.app.color(baseattrs, is_selected)
+                )
                 line = extra[0]
 
-            if align is not None and align.endswith('>'):
-                group_width = len(' '.join([e.content for e in group.elements]))
-                spacing_width = min(maxwidth - len(line),
-                                    self.max_widths[group.name] - group_width)
+            if align is not None and align.endswith(">"):
+                group_width = len(" ".join([e.content for e in group.elements]))
+                spacing_width = min(
+                    maxwidth - len(line), self.max_widths[group.name] - group_width
+                )
                 spacing = align[0] * spacing_width
                 try:
-                    self.win.addstr(y, x + len(line), spacing, self.app.color(baseattrs, is_selected))
+                    self.win.addstr(
+                        y,
+                        x + len(line),
+                        spacing,
+                        self.app.color(baseattrs, is_selected),
+                    )
                 except curses.error:
                     pass
                 line += spacing
 
             cut_off = False
             for elnr, element in enumerate(group.elements):
-                word = ''
+                word = ""
 
-                if elnr > 0 and (element.space_around or group.elements[elnr-1].space_around):
+                if elnr > 0 and (
+                    element.space_around or group.elements[elnr - 1].space_around
+                ):
                     if len(line) + 1 >= maxwidth:
                         cut_off = True
                     else:
-                        self.win.addstr(y, x + len(line), " ",
-                                        self.app.color(baseattrs, is_selected))
+                        self.win.addstr(
+                            y,
+                            x + len(line),
+                            " ",
+                            self.app.color(baseattrs, is_selected),
+                        )
                         line += " "
 
                 cut_off = cut_off or len(line) >= maxwidth
 
                 if not cut_off:
                     if isinstance(element, TaskLineGroup):
-                        word = print_group(y, x + len(line),
-                                           maxwidth-len(line),
-                                           element, None, None)
+                        word = print_group(
+                            y, x + len(line), maxwidth - len(line), element, None, None
+                        )
                     else:
-                        word = print_element(y, x + len(line),
-                                             maxwidth-len(line),
-                                             element, None, None)
+                        word = print_element(
+                            y, x + len(line), maxwidth - len(line), element, None, None
+                        )
                     line += word
 
                 if cut_off or len(line) >= maxwidth:
                     break
 
-            if not cut_off and align is not None and align.endswith('<'):
+            if not cut_off and align is not None and align.endswith("<"):
                 if len(line) < self.max_widths[group.name]:
-                    spacing = align[0] * min(maxwidth-len(line),
-                                             self.max_widths[group.name]-len(line))
-                    self.win.addstr(y, x + len(line),
-                                    spacing,
-                                    self.app.color(baseattrs, is_selected))
+                    spacing = align[0] * min(
+                        maxwidth - len(line), self.max_widths[group.name] - len(line)
+                    )
+                    self.win.addstr(
+                        y,
+                        x + len(line),
+                        spacing,
+                        self.app.color(baseattrs, is_selected),
+                    )
                     line += spacing
 
-            if not cut_off and extra is not None and extra[1] is not None and len(line) + 1 < maxwidth:
-                self.win.addstr(y, x + len(line), extra[1], self.app.color(baseattrs, is_selected))
+            if (
+                not cut_off
+                and extra is not None
+                and extra[1] is not None
+                and len(line) + 1 < maxwidth
+            ):
+                self.win.addstr(
+                    y, x + len(line), extra[1], self.app.color(baseattrs, is_selected)
+                )
             return line
 
         self.win.move(y, x)
@@ -578,20 +673,22 @@ class TaskList(RemappedScrollPanel):
             if isinstance(token, tuple):
                 token, align, extra_left, extra_right = token
                 extra = (extra_left, extra_right)
-                token = taskline.elements.get(token, TaskLineElement('', name=token))
+                token = taskline.elements.get(token, TaskLineElement("", name=token))
             elif isinstance(token, str):
                 token = TaskLineElement(token)
             else:
                 raise TypeError()
 
-            x += len(print_element(y, x, maxwidth-x, token, align, extra))
+            x += len(print_element(y, x, maxwidth - x, token, align, extra))
 
             if x >= maxwidth:
                 break
 
         if x < maxwidth:
             try:
-                self.win.addstr(y, x, ' '*(maxwidth-x), self.app.color(baseattrs, is_selected))
+                self.win.addstr(
+                    y, x, " " * (maxwidth - x), self.app.color(baseattrs, is_selected)
+                )
             except curses.error:
                 pass
 
@@ -612,8 +709,11 @@ class TaskList(RemappedScrollPanel):
             else:
                 return False
 
-            matching = [idx for idx, t in enumerate(self.items)
-                        if str(t.source.filename) + "\n" + str(t.task) == task]
+            matching = [
+                idx
+                for idx, t in enumerate(self.items)
+                if str(t.source.filename) + "\n" + str(t.task) == task
+            ]
 
             if len(matching) == 0:
                 return False
@@ -664,34 +764,34 @@ class RemappedInputLine(InputLine):
             must_repaint = self.on_timeout()
         elif self.completion is not None and self.completion.handle_key(key):
             handled = True
-        elif fnc == 'cancel':
+        elif fnc == "cancel":
             self.on_cancel()
-        elif fnc == 'submit-input':
+        elif fnc == "submit-input":
             self.on_submit()
-        elif fnc == 'del-left' and self.cursor > 0:
-            self.text = self.text[:self.cursor-1] + self.text[self.cursor:]
+        elif fnc == "del-left" and self.cursor > 0:
+            self.text = self.text[: self.cursor - 1] + self.text[self.cursor :]
             self.cursor -= 1
             must_repaint = True
-        elif fnc == 'del-right':
-            self.text = self.text[:self.cursor] + self.text[self.cursor+1:]
+        elif fnc == "del-right":
+            self.text = self.text[: self.cursor] + self.text[self.cursor + 1 :]
             must_repaint = True
-        elif fnc == 'del-to-bol':
-            self.text = self.text[self.cursor:]
+        elif fnc == "del-to-bol":
+            self.text = self.text[self.cursor :]
             self.cursor = 0
             must_repaint = True
-        elif fnc == 'go-left':
-            self.cursor = max(0, self.cursor-1)
+        elif fnc == "go-left":
+            self.cursor = max(0, self.cursor - 1)
             must_repaint = self.scroll()
-        elif fnc == 'go-right':
-            self.cursor = min(len(self.text), self.cursor+1)
+        elif fnc == "go-right":
+            self.cursor = min(len(self.text), self.cursor + 1)
             must_repaint = self.scroll()
-        elif fnc == 'go-bol':
+        elif fnc == "go-bol":
             self.cursor = 0
             must_repaint = self.scroll()
-        elif fnc == 'go-eol':
+        elif fnc == "go-eol":
             self.cursor = len(self.text)
             must_repaint = self.scroll()
-        elif fnc == 'goto-empty':
+        elif fnc == "goto-empty":
             empty_field = utils.EMPTY_FIELD_RE.search(self.text, self.cursor)
             if empty_field is None and self.app.tab_cycles:
                 empty_field = utils.EMPTY_FIELD_RE.search(self.text, 0)
@@ -700,7 +800,7 @@ class RemappedInputLine(InputLine):
                 must_repaint = self.scroll()
 
         elif len(str(key)) == 1:
-            self.text = self.text[:self.cursor] + str(key) + self.text[self.cursor:]
+            self.text = self.text[: self.cursor] + str(key) + self.text[self.cursor :]
             self.cursor += 1
             must_repaint = True
         else:
@@ -721,14 +821,26 @@ class RemappedInputLine(InputLine):
 class ContextCompletion(Completion):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.KEYS_NEXT_ALTERNATIVE = [key for key, value in self.app.completion_key_mapping.items()
-                                      if value == 'comp-next']
-        self.KEYS_PREVIOUS_ALTERNATIVE = [key for key, value in self.app.completion_key_mapping.items()
-                                          if value == 'comp-prev']
-        self.KEYS_SELECT_ALTERNATIVE = [key for key, value in self.app.completion_key_mapping.items()
-                                        if value == 'comp-use']
-        self.KEYS_CANCEL_SUGGESTIONS = [key for key, value in self.app.completion_key_mapping.items()
-                                        if value == 'comp-close']
+        self.KEYS_NEXT_ALTERNATIVE = [
+            key
+            for key, value in self.app.completion_key_mapping.items()
+            if value == "comp-next"
+        ]
+        self.KEYS_PREVIOUS_ALTERNATIVE = [
+            key
+            for key, value in self.app.completion_key_mapping.items()
+            if value == "comp-prev"
+        ]
+        self.KEYS_SELECT_ALTERNATIVE = [
+            key
+            for key, value in self.app.completion_key_mapping.items()
+            if value == "comp-use"
+        ]
+        self.KEYS_CANCEL_SUGGESTIONS = [
+            key
+            for key, value in self.app.completion_key_mapping.items()
+            if value == "comp-close"
+        ]
 
     def close(self):
         retval = super().close()
@@ -743,16 +855,15 @@ class ContextCompletion(Completion):
             self.close()
             return
 
-        word = self.inputline.text[span[0]:self.inputline.cursor].lower()
-        if word.startswith('@'):
+        word = self.inputline.text[span[0] : self.inputline.cursor].lower()
+        if word.startswith("@"):
             options = self.app.known_contexts()
-        elif word.startswith('+'):
+        elif word.startswith("+"):
             options = self.app.known_projects()
         else:
             return
 
-        options = [o for o in sorted(options)
-                   if o.lower().startswith(word)]
+        options = [o for o in sorted(options) if o.lower().startswith(word)]
 
         if len(options) == 0 or (len(options) == 1 and word in options):
             self.close()
@@ -776,15 +887,17 @@ class SearchBar(RemappedInputLine):
         self.scroll()
 
         attr = 0
-        if len(self.text) == 0 and (len(self.app.focus) == 0 or self.app.focus[-1] is not self):
-            visible_text = tr('(no search active)')
+        if len(self.text) == 0 and (
+            len(self.app.focus) == 0 or self.app.focus[-1] is not self
+        ):
+            visible_text = tr("(no search active)")
             attr = self.app.color(common.SETTING_COL_INACTIVE)
         else:
-            visible_text = self.text[self.offset:]
+            visible_text = self.text[self.offset :]
 
-        visible_text = visible_text[:self.dim[1]]
+        visible_text = visible_text[: self.dim[1]]
         try:
-            self.win.addstr(0, 0, " "*self.dim[1])
+            self.win.addstr(0, 0, " " * self.dim[1])
         except curses.error:
             pass
         self.win.addstr(0, 0, visible_text, attr)
@@ -819,7 +932,7 @@ class SearchBar(RemappedInputLine):
 
 
 class UserInput(Panel):
-    def __init__(self, parent, on_accept, on_cancel=None, title='', text=''):
+    def __init__(self, parent, on_accept, on_cancel=None, title="", text=""):
         super().__init__(parent.app)
         self.parent = parent
         self.title = title
@@ -849,21 +962,21 @@ class UserInput(Panel):
 
     def autoresize(self):
         maxheight, maxwidth = self.app.size()
-        width = 2*maxwidth//3
+        width = 2 * maxwidth // 3
         if width < 22:
             width = maxwidth
         self.resize(3, width)
-        y = maxheight//2 - 2
-        x = (maxwidth - width)//2
+        y = maxheight // 2 - 2
+        x = (maxwidth - width) // 2
         self.move(y, x)
-        self.editor.resize(width-2)
-        self.editor.move(y+1, x+1)
+        self.editor.resize(width - 2)
+        self.editor.move(y + 1, x + 1)
 
     def paint(self, clear=None):
         super().paint(clear)
         label = tr(self.title)
         if self.editor.read_only:
-            label += ' ' + tr("(read only)")
+            label += " " + tr("(read only)")
         add_title(self, tr(self.title))
         self.win.noutrefresh()
         self.editor.paint(clear)
@@ -883,7 +996,9 @@ class UserInput(Panel):
 
 class TaskEditor(UserInput):
     def __init__(self, parent, task):
-        super().__init__(parent, None, None, 'Edit Task', '' if task is None else str(task.task))
+        super().__init__(
+            parent, None, None, "Edit Task", "" if task is None else str(task.task)
+        )
         self.task = task
         self.on_accept = self.save_changes
         self.on_cancel = lambda: self.app.show_cursor(False)
@@ -898,7 +1013,9 @@ class TaskEditor(UserInput):
 
     @property
     def processed_text(self):
-        return utils.dehumanize_dates(utils.auto_task_id(self.app.sources, self.editor.text))
+        return utils.dehumanize_dates(
+            utils.auto_task_id(self.app.sources, self.editor.text)
+        )
 
     def has_changes(self):
         return str(self.task.task) != self.processed_text
@@ -907,11 +1024,17 @@ class TaskEditor(UserInput):
 class TaskCreator(TaskEditor):
     def __init__(self, parent):
         super().__init__(parent, None)
-        self.title = 'New task'
+        self.title = "New task"
 
-        add_creation_date = self.app.conf.bool(common.SETTING_GROUP_GENERAL, common.SETTING_ADD_CREATED)
-        create_from_search = self.app.conf.bool(common.SETTING_GROUP_GENERAL, common.SETTING_CREATE_FROM_SEARCH)
-        self.auto_id = self.app.conf.bool(common.SETTING_GROUP_GENERAL, common.SETTING_AUTO_ID)
+        add_creation_date = self.app.conf.bool(
+            common.SETTING_GROUP_GENERAL, common.SETTING_ADD_CREATED
+        )
+        create_from_search = self.app.conf.bool(
+            common.SETTING_GROUP_GENERAL, common.SETTING_CREATE_FROM_SEARCH
+        )
+        self.auto_id = self.app.conf.bool(
+            common.SETTING_GROUP_GENERAL, common.SETTING_AUTO_ID
+        )
         self.editor.cursor = 1
 
         initial = []
@@ -924,9 +1047,9 @@ class TaskCreator(TaskEditor):
         if self.app.selected_template is not None:
             initial.append(self.app.selected_template)
 
-        initial = ' '.join([part for part in initial if len(part) > 0])
-        if len(initial) > 0 and not initial.endswith(' '):
-            initial += ' '
+        initial = " ".join([part for part in initial if len(part) > 0])
+        if len(initial) > 0 and not initial.endswith(" "):
+            initial += " "
         self.editor.text = initial
         self.editor.scroll()
 
@@ -935,12 +1058,16 @@ class TaskCreator(TaskEditor):
     def handle_key(self, key):
         fnc = self.app.editor_key_mapping.get(str(key), None)
 
-        if fnc == 'select-file' and len(self.app.sources) > 1:
+        if fnc == "select-file" and len(self.app.sources) > 1:
             self.app.show_cursor(False)
-            self.app.focus.append(SourceSelector(self,
-                                                 self.app.sources,
-                                                 self.change_source,
-                                                 lambda: self.app.show_cursor(True)))
+            self.app.focus.append(
+                SourceSelector(
+                    self,
+                    self.app.sources,
+                    self.change_source,
+                    lambda: self.app.show_cursor(True),
+                )
+            )
             self.app.paint(True)
             return True
 
@@ -953,10 +1080,16 @@ class TaskCreator(TaskEditor):
 
     def save_changes(self, text):
         self.app.show_cursor(False)
-        if self.has_changes() and not self.editor.read_only and self.processed_text != "":
+        if (
+            self.has_changes()
+            and not self.editor.read_only
+            and self.processed_text != ""
+        ):
             text = self.processed_text
-            if self.auto_id and not any([word.startswith('id:') for word in text.split(' ')]):
-                text += ' id:#'
+            if self.auto_id and not any(
+                [word.startswith("id:") for word in text.split(" ")]
+            ):
+                text += " id:#"
                 text = utils.auto_task_id(self.app.sources, text)
 
             self.task.parse(text)
@@ -983,7 +1116,7 @@ class TaskCreator(TaskEditor):
 
         if len(self.app.sources) > 1:
             label = self.task.todotxt.displayname
-            self.win.addstr(2, self.dim[1]-len(label)-3, f"┤{label}├")
+            self.win.addstr(2, self.dim[1] - len(label) - 3, f"┤{label}├")
             self.win.noutrefresh()
 
     def has_changes(self):
@@ -991,7 +1124,9 @@ class TaskCreator(TaskEditor):
 
 
 class Selector(RemappedScrollPanel):
-    def __init__(self, parent, items, on_select, on_cancel=None, title='', numbered=False):
+    def __init__(
+        self, parent, items, on_select, on_cancel=None, title="", numbered=False
+    ):
         super().__init__(parent.app)
         self.parent = parent
         self.on_select = on_select
@@ -1009,35 +1144,38 @@ class Selector(RemappedScrollPanel):
 
     def autoresize(self):
         self.border = Panel.BORDER_ALL
-        if hasattr(self.parent, 'autoresize'):
+        if hasattr(self.parent, "autoresize"):
             self.parent.autoresize()
         maxheight, maxwidth = self.app.size()
-        labelwidth = max([len(self.make_label(item)) for item in self.items]) \
-                   + len(self.indicator(True)) \
-                   + len(str(len(self.items))) + 3
+        labelwidth = (
+            max([len(self.make_label(item)) for item in self.items])
+            + len(self.indicator(True))
+            + len(str(len(self.items)))
+            + 3
+        )
         w = min(maxwidth, labelwidth)
-        h = min(maxheight-2, len(self.items)+2)
+        h = min(maxheight - 2, len(self.items) + 2)
         self.resize(h, w)
-        self.move((maxheight-h)//2, (maxwidth-w)//2)
+        self.move((maxheight - h) // 2, (maxwidth - w) // 2)
 
     def handle_key(self, key):
         strkey = str(key)
         fnc = self.app.key_mapping.get((strkey,), None)
 
-        if fnc == 'cancel':
+        if fnc == "cancel":
             self.destroy()
             if self.on_cancel is not None:
                 self.on_cancel()
             return True
 
-        elif fnc == 'select-item':
+        elif fnc == "select-item":
             item = self.selected_item
             self.destroy()
             self.on_select(item)
             return True
 
-        elif fnc == 'jump-to':
-            self.app.focus.append(JumpToIndexReader(self.app, ''))
+        elif fnc == "jump-to":
+            self.app.focus.append(JumpToIndexReader(self.app, ""))
             self.app.paint(True)
             return True
 
@@ -1053,7 +1191,7 @@ class Selector(RemappedScrollPanel):
             return ""
 
         idx = self.items.index(item)
-        nrwidth = len(str(len(self.items)+1))
+        nrwidth = len(str(len(self.items) + 1))
         return f"{idx+1: >{nrwidth}} "
 
     def indicator(self, is_selected):
@@ -1061,7 +1199,7 @@ class Selector(RemappedScrollPanel):
             return ""
         pointer = self.app.selection_indicator + " "
         if not is_selected:
-            pointer = " "*len(pointer)
+            pointer = " " * len(pointer)
         return pointer
 
     def make_label(self, item):
@@ -1070,10 +1208,14 @@ class Selector(RemappedScrollPanel):
     def do_paint_item(self, y, x, maxwidth, is_selected, item):
         attrs = self.app.color(common.SETTING_COL_NORMAL, is_selected)
 
-        label = self.indicator(is_selected) + self.number_prefix(item) + self.make_label(item)
+        label = (
+            self.indicator(is_selected)
+            + self.number_prefix(item)
+            + self.make_label(item)
+        )
 
         self.win.addstr(y, x, label[:maxwidth], attrs)
-    
+
     def destroy(self):
         super().destroy()
         self.app.focus.pop(-1)
@@ -1083,7 +1225,7 @@ class Selector(RemappedScrollPanel):
 class SourceSelector(Selector):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.title = 'Select source'
+        self.title = "Select source"
 
     def make_label(self, item):
         return item.displayname
@@ -1093,41 +1235,116 @@ class HelpScreen(RemappedScrollPanel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        nav_fncs = ['next-item', 'prev-item', 'page-up', 'page-down',
-                    'first-item', 'last-item', 'jump-to']
-        edt_fncs = ['toggle-hidden', 'toggle-done', 'edit-task', 'create-task',
-                    'toggle-tracking', 'delegate', 'save-template', 'load-template',
-                    'delete-task', 'prio-a', 'prio-b', 'prio-c', 'prio-c',
-                    'prio-none', 'prio-up', 'prio-down', 'multi-select']
-        search_fncs = ['search', 'load-search', 'save-search',
-                       'search-context', 'search-project', 'clear-search']
-        meta_fncs = ['show-help', 'open-manual', 'quit', 'cancel', 'refresh-screen',
-                     'reload-tasks']
-        other_fncs = ['open-url']
+        nav_fncs = [
+            "next-item",
+            "prev-item",
+            "page-up",
+            "page-down",
+            "first-item",
+            "last-item",
+            "jump-to",
+        ]
+        edt_fncs = [
+            "toggle-hidden",
+            "toggle-done",
+            "edit-task",
+            "create-task",
+            "toggle-tracking",
+            "delegate",
+            "save-template",
+            "load-template",
+            "delete-task",
+            "prio-a",
+            "prio-b",
+            "prio-c",
+            "prio-c",
+            "prio-none",
+            "prio-up",
+            "prio-down",
+            "multi-select",
+        ]
+        search_fncs = [
+            "search",
+            "load-search",
+            "save-search",
+            "search-context",
+            "search-project",
+            "clear-search",
+        ]
+        meta_fncs = [
+            "show-help",
+            "open-manual",
+            "quit",
+            "cancel",
+            "refresh-screen",
+            "reload-tasks",
+        ]
+        other_fncs = ["open-url"]
 
-        lines = [(tr('TASK LIST'), ''), ('', ''), (tr('Program'), '')]
-        lines += [(name, key) for name, key in self.collect_name_fnc(meta_fncs, self.app.key_mapping)]
-        lines += [('', ''), (tr('Navigation'), '')]
-        lines += [(name, key) for name, key in self.collect_name_fnc(nav_fncs, self.app.key_mapping)]
-        lines += [('', ''), (tr('Search'), '')]
-        lines += [(name, key) for name, key in self.collect_name_fnc(search_fncs, self.app.key_mapping)]
-        lines += [('', ''), (tr('Change Tasks'), '')]
-        lines += [(name, key) for name, key in self.collect_name_fnc(edt_fncs, self.app.key_mapping)]
-        lines += [('', ''), (tr('Other'), '')]
-        lines += [(name, key) for name, key in self.collect_name_fnc(other_fncs, self.app.key_mapping)]
+        lines = [(tr("TASK LIST"), ""), ("", ""), (tr("Program"), "")]
+        lines += [
+            (name, key)
+            for name, key in self.collect_name_fnc(meta_fncs, self.app.key_mapping)
+        ]
+        lines += [("", ""), (tr("Navigation"), "")]
+        lines += [
+            (name, key)
+            for name, key in self.collect_name_fnc(nav_fncs, self.app.key_mapping)
+        ]
+        lines += [("", ""), (tr("Search"), "")]
+        lines += [
+            (name, key)
+            for name, key in self.collect_name_fnc(search_fncs, self.app.key_mapping)
+        ]
+        lines += [("", ""), (tr("Change Tasks"), "")]
+        lines += [
+            (name, key)
+            for name, key in self.collect_name_fnc(edt_fncs, self.app.key_mapping)
+        ]
+        lines += [("", ""), (tr("Other"), "")]
+        lines += [
+            (name, key)
+            for name, key in self.collect_name_fnc(other_fncs, self.app.key_mapping)
+        ]
 
-        edt_nav_fncs = ['go-left', 'go-right', 'go-bol', 'go-eol', 'goto-empty']
-        edt_edt_fncs = ['del-left', 'del-right', 'del-to-bol']
-        edt_meta_fncs = ['cancel', 'submit-input']
-        edt_comp_fncs = ['comp-next', 'comp-prev', 'comp-use', 'comp-close']
-        lines += [('', ''), ('', ''), (tr('TASK EDITING'), ''), ('', ''), (tr('General'), '')]
-        lines += [(name, key) for name, key in self.collect_name_fnc(edt_meta_fncs, self.app.editor_key_mapping)]
-        lines += [('', ''), (tr('Navigation'), '')]
-        lines += [(name, key) for name, key in self.collect_name_fnc(edt_nav_fncs, self.app.editor_key_mapping)]
-        lines += [('', ''), (tr('Deletion'), '')]
-        lines += [(name, key) for name, key in self.collect_name_fnc(edt_edt_fncs, self.app.editor_key_mapping)]
-        lines += [('', ''), (tr('Completion'), '')]
-        lines += [(name, key) for name, key in self.collect_name_fnc(edt_comp_fncs, self.app.completion_key_mapping)]
+        edt_nav_fncs = ["go-left", "go-right", "go-bol", "go-eol", "goto-empty"]
+        edt_edt_fncs = ["del-left", "del-right", "del-to-bol"]
+        edt_meta_fncs = ["cancel", "submit-input"]
+        edt_comp_fncs = ["comp-next", "comp-prev", "comp-use", "comp-close"]
+        lines += [
+            ("", ""),
+            ("", ""),
+            (tr("TASK EDITING"), ""),
+            ("", ""),
+            (tr("General"), ""),
+        ]
+        lines += [
+            (name, key)
+            for name, key in self.collect_name_fnc(
+                edt_meta_fncs, self.app.editor_key_mapping
+            )
+        ]
+        lines += [("", ""), (tr("Navigation"), "")]
+        lines += [
+            (name, key)
+            for name, key in self.collect_name_fnc(
+                edt_nav_fncs, self.app.editor_key_mapping
+            )
+        ]
+        lines += [("", ""), (tr("Deletion"), "")]
+        lines += [
+            (name, key)
+            for name, key in self.collect_name_fnc(
+                edt_edt_fncs, self.app.editor_key_mapping
+            )
+        ]
+        lines += [("", ""), (tr("Completion"), "")]
+        lines += [
+            (name, key)
+            for name, key in self.collect_name_fnc(
+                edt_comp_fncs, self.app.completion_key_mapping
+            )
+        ]
 
         self.maxnamelen = max([len(n) for n, _ in lines])
 
@@ -1140,16 +1357,21 @@ class HelpScreen(RemappedScrollPanel):
         self.scroll()
 
     def scroll(self):
-        self.cursor = max((self.list_height-1)//2, self.cursor)
+        self.cursor = max((self.list_height - 1) // 2, self.cursor)
         super().scroll()
 
     def do_paint_item(self, y, x, maxwidth, is_selected, item):
         attrs = common.SETTING_COL_NORMAL
-        if item[1] == '':
+        if item[1] == "":
             attrs = common.SETTING_COL_CONTEXT
-        keytext = ''.join(item[1])
+        keytext = "".join(item[1])
         fnclabel = item[0]
-        self.win.addstr(y, x, fnclabel + " "*(self.maxnamelen-len(fnclabel)+3) + keytext, self.app.color(attrs))
+        self.win.addstr(
+            y,
+            x,
+            fnclabel + " " * (self.maxnamelen - len(fnclabel) + 3) + keytext,
+            self.app.color(attrs),
+        )
         self.win.noutrefresh()
 
     def collect_name_fnc(self, fncs, mapping):
@@ -1160,7 +1382,7 @@ class HelpScreen(RemappedScrollPanel):
     def handle_key(self, key):
         fnc = self.app.key_mapping.get((str(key),), None)
 
-        if fnc in ['quit', 'cancel']:
+        if fnc in ["quit", "cancel"]:
             self.destroy()
             self.app.focus.pop(-1)
             self.app.paint(True)
@@ -1171,7 +1393,7 @@ class HelpScreen(RemappedScrollPanel):
 
 class JumpToIndexReader(RemappedInputLine):
     def __init__(self, app, init):
-        super().__init__(app, 1, (1,1))
+        super().__init__(app, 1, (1, 1))
         self.parent = app.focus[-1]
         assert self.parent is not self
 
@@ -1183,12 +1405,12 @@ class JumpToIndexReader(RemappedInputLine):
 
     def autoresize(self):
         height, width = self.app.size()
-        self.move(height-2, 0)
-        self.resize(width-1)
+        self.move(height - 2, 0)
+        self.resize(width - 1)
 
     def on_submit(self):
         try:
-            index = int(self.text)-1
+            index = int(self.text) - 1
         except ValueError:
             index = None
 
@@ -1206,6 +1428,7 @@ class JumpToIndexReader(RemappedInputLine):
         self.app.status_bar.paint(True)
         self.app.focus[-1].paint(True)
 
+
 def multi_select(function):
     """Perform an action, but if we've just pressed ; apply the action to any multi-selected tasks
     instead of the selected task."""
@@ -1213,7 +1436,11 @@ def multi_select(function):
     def wrapper(app, *args, **kwargs):
         try:
             if app.apply_to_multi_selection:
-                multi_selected = [task_line for task_line in app.tasks.items if task_line.multi_selected]
+                multi_selected = [
+                    task_line
+                    for task_line in app.tasks.items
+                    if task_line.multi_selected
+                ]
                 if not multi_selected:
                     logging.error("No tasks multi-selected.")
                 for task in multi_selected:
@@ -1225,6 +1452,7 @@ def multi_select(function):
             raise
         finally:
             app.apply_to_multi_selection = False
+
     return wrapper
 
 
@@ -1243,79 +1471,132 @@ class CursesApplication(Application):
         # sorting and searching
         self.sort_order = utils.build_sort_order(common.DEFAULT_SORT_ORDER)
         self.sort_order_txt = common.DEFAULT_SORT_ORDER
-        self.search = Searcher('',
-                               self.conf.bool(common.SETTING_GROUP_GENERAL,
-                                              common.SETTING_SEARCH_CASE_SENSITIVE),
-                               self.conf.get(common.SETTING_GROUP_GENERAL,
-                                             common.SETTING_DEFAULT_THRESHOLD),
-                               self.conf.bool(common.SETTING_GROUP_GENERAL,
-                                              common.SETTING_HIDE_SEQUENTIAL))
+        self.search = Searcher(
+            "",
+            self.conf.bool(
+                common.SETTING_GROUP_GENERAL, common.SETTING_SEARCH_CASE_SENSITIVE
+            ),
+            self.conf.get(
+                common.SETTING_GROUP_GENERAL, common.SETTING_DEFAULT_THRESHOLD
+            ),
+            self.conf.bool(
+                common.SETTING_GROUP_GENERAL, common.SETTING_HIDE_SEQUENTIAL
+            ),
+        )
         self.search.update_sources(self.sources)
 
         # task display
-        self.task_format = utils.parse_task_format(conf.get(common.SETTING_GROUP_GENERAL,
-                                                            common.SETTING_TASK_FORMAT,
-                                                            common.DEFAULT_TASK_FORMAT))
-        self.done_marker = (utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                   common.SETTING_ICON_NOT_DONE)),
-                            utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                   common.SETTING_ICON_DONE)))
-        self.overflow_marker = (utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                       common.SETTING_ICON_OVERFLOW_LEFT)),
-                                utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                       common.SETTING_ICON_OVERFLOW_RIGHT)))
-        self.due_marker = (utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                  common.SETTING_ICON_OVERDUE)),
-                           utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                  common.SETTING_ICON_DUE_TODAY)),
-                           utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                  common.SETTING_ICON_DUE_TOMORROW)))
-        self.tracking_marker = utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                      common.SETTING_ICON_TRACKING))
-        self.human_friendly_dates = conf.list(common.SETTING_GROUP_GENERAL,
-                                              common.SETTING_HUMAN_DATES)
+        self.task_format = utils.parse_task_format(
+            conf.get(
+                common.SETTING_GROUP_GENERAL,
+                common.SETTING_TASK_FORMAT,
+                common.DEFAULT_TASK_FORMAT,
+            )
+        )
+        self.done_marker = (
+            utils.unquote(
+                conf.get(common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_NOT_DONE)
+            ),
+            utils.unquote(
+                conf.get(common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_DONE)
+            ),
+        )
+        self.overflow_marker = (
+            utils.unquote(
+                conf.get(
+                    common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_OVERFLOW_LEFT
+                )
+            ),
+            utils.unquote(
+                conf.get(
+                    common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_OVERFLOW_RIGHT
+                )
+            ),
+        )
+        self.due_marker = (
+            utils.unquote(
+                conf.get(common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_OVERDUE)
+            ),
+            utils.unquote(
+                conf.get(common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_DUE_TODAY)
+            ),
+            utils.unquote(
+                conf.get(common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_DUE_TOMORROW)
+            ),
+        )
+        self.tracking_marker = utils.unquote(
+            conf.get(common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_TRACKING)
+        )
+        self.human_friendly_dates = conf.list(
+            common.SETTING_GROUP_GENERAL, common.SETTING_HUMAN_DATES
+        )
 
         # colors and UI markers
-        self.use_colors = conf.bool(common.SETTING_GROUP_GENERAL,
-                                    common.SETTING_USE_COLORS)
-        self.selection_indicator = utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                          common.SETTING_ICON_SELECTION))
-        self.multi_selection_indicator = utils.unquote(conf.get(common.SETTING_GROUP_SYMBOLS,
-                                                          common.SETTING_ICON_MULTI_SELECTION))
+        self.use_colors = conf.bool(
+            common.SETTING_GROUP_GENERAL, common.SETTING_USE_COLORS
+        )
+        self.selection_indicator = utils.unquote(
+            conf.get(common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_SELECTION)
+        )
+        self.multi_selection_indicator = utils.unquote(
+            conf.get(common.SETTING_GROUP_SYMBOLS, common.SETTING_ICON_MULTI_SELECTION)
+        )
 
         # delegation configuration
-        self.delegation_marker = self.conf.get(common.SETTING_GROUP_GENERAL,
-                                               common.SETTING_DELEG_MARKER).strip()
-        self.delegation_action = self.conf.get(common.SETTING_GROUP_GENERAL,
-                                               common.SETTING_DELEG_ACTION).lower()
-        self.delegate_to = self.conf.get(common.SETTING_GROUP_GENERAL,
-                                         common.SETTING_DELEG_TO).lower().strip()
+        self.delegation_marker = self.conf.get(
+            common.SETTING_GROUP_GENERAL, common.SETTING_DELEG_MARKER
+        ).strip()
+        self.delegation_action = self.conf.get(
+            common.SETTING_GROUP_GENERAL, common.SETTING_DELEG_ACTION
+        ).lower()
+        self.delegate_to = (
+            self.conf.get(common.SETTING_GROUP_GENERAL, common.SETTING_DELEG_TO)
+            .lower()
+            .strip()
+        )
         if self.delegation_action not in common.DELEGATE_ACTIONS:
-            logging.error(f"Configuration option 'delegate-option' ('{self.delegation_action}') is invalid.")
+            logging.error(
+                f"Configuration option 'delegate-option' ('{self.delegation_action}') is invalid."
+            )
             self.delegation_action = common.DELEGATE_ACTION_NONE
 
         # behaviour
-        self.clear_contexts = [context
-                               for context in conf.list(common.SETTING_GROUP_GENERAL, common.SETTING_CLEAR_CONTEXT)
-                               if len(context) > 0]
-        self.reuse_recurring = conf.bool(common.SETTING_GROUP_GENERAL,
-                                         common.SETTING_REUSE_RECURRING, 'n')
-        self.scroll_margin = conf.number(common.SETTING_GROUP_GENERAL,
-                                         common.SETTING_SCROLL_MARGIN)
-        self.safe_save = conf.bool(common.SETTING_GROUP_GENERAL,
-                                   common.SETTING_SAFE_SAVE, 'y')
-        self.use_completion = conf.bool(common.SETTING_GROUP_GENERAL,
-                                        common.SETTING_USE_COMPLETION, 'y')
-        self.tab_cycles = conf.bool(common.SETTING_GROUP_GENERAL,
-                                        common.SETTING_TAB_CYCLES, 'y')
-        self.trash_file = conf.path(common.SETTING_GROUP_GENERAL,
-                                    common.SETTING_TRASHFILE,
-                                    common.DEFAULT_TRASHFILE)
-        self.delete_is = conf.get(common.SETTING_GROUP_GENERAL,
-                                  common.SETTING_DELETE_IS,
-                                  common.DELETE_OPTION_DISABLED)
+        self.clear_contexts = [
+            context
+            for context in conf.list(
+                common.SETTING_GROUP_GENERAL, common.SETTING_CLEAR_CONTEXT
+            )
+            if len(context) > 0
+        ]
+        self.reuse_recurring = conf.bool(
+            common.SETTING_GROUP_GENERAL, common.SETTING_REUSE_RECURRING, "n"
+        )
+        self.scroll_margin = conf.number(
+            common.SETTING_GROUP_GENERAL, common.SETTING_SCROLL_MARGIN
+        )
+        self.safe_save = conf.bool(
+            common.SETTING_GROUP_GENERAL, common.SETTING_SAFE_SAVE, "y"
+        )
+        self.use_completion = conf.bool(
+            common.SETTING_GROUP_GENERAL, common.SETTING_USE_COMPLETION, "y"
+        )
+        self.tab_cycles = conf.bool(
+            common.SETTING_GROUP_GENERAL, common.SETTING_TAB_CYCLES, "y"
+        )
+        self.trash_file = conf.path(
+            common.SETTING_GROUP_GENERAL,
+            common.SETTING_TRASHFILE,
+            common.DEFAULT_TRASHFILE,
+        )
+        self.delete_is = conf.get(
+            common.SETTING_GROUP_GENERAL,
+            common.SETTING_DELETE_IS,
+            common.DELETE_OPTION_DISABLED,
+        )
         if self.delete_is not in common.DELETE_OPTIONS:
-            logging.error(f"Configuration option 'delete-is' ('{self.delete_is}') is invalid.")
+            logging.error(
+                f"Configuration option 'delete-is' ('{self.delete_is}') is invalid."
+            )
             self.delete_is = common.DELETE_OPTION_DISABLED
         self.last_perm_delete = datetime.datetime.now()
         self.perm_delete_timeout = datetime.timedelta(milliseconds=500)
@@ -1325,142 +1606,144 @@ class CursesApplication(Application):
             try:
                 self.trash_file.parent.mkdir(parents=True, exist_ok=True)
             except OSError as exc:
-                logging.error(f"Could not create path to trash file '{self.trash_file.parent}': {exc}")
+                logging.error(
+                    f"Could not create path to trash file '{self.trash_file.parent}': {exc}"
+                )
                 self.delete_is = common.DELETE_OPTION_DISABLED
 
         # ensure the trash file can be written
         if self.delete_is == common.DELETE_OPTION_TRASH:
             try:
-                with open(self.trash_file, 'a', encoding='utf-8'):
+                with open(self.trash_file, "a", encoding="utf-8"):
                     logging.debug(f"Using trash file {self.trash_file}")
             except OSError as exc:
                 logging.error(f"Could not open trash file '{self.trash_file}': {exc}")
                 self.delete_is = common.DELETE_OPTION_DISABLED
 
         # external editor
-        self.external_editor = self.conf.get(common.SETTING_GROUP_GENERAL,
-                                             common.SETTING_EXT_EDITOR)
+        self.external_editor = self.conf.get(
+            common.SETTING_GROUP_GENERAL, common.SETTING_EXT_EDITOR
+        )
 
         # protocols accepted to open with open-url
-        self.protos = conf.list(common.SETTING_GROUP_GENERAL,
-                                common.SETTING_PROTOCOLS)
+        self.protos = conf.list(common.SETTING_GROUP_GENERAL, common.SETTING_PROTOCOLS)
 
         self.selected_template = None
 
         # keys, mappings, and functions
         self.key_sequence = []  # current sequence of keys
         self.key_mapping = {
-            ('q',): 'quit',
-            ('^C',): 'cancel',
-            ('<escape>',): 'cancel',
-            ('<down>',): 'next-item',
-            ('<up>',): 'prev-item',
-            ('<pgup>',): 'page-up',
-            ('<pgdn>',): 'page-down',
-            ('<home>',): 'first-item',
-            ('<end>',): 'last-item',
-            ('j',): 'next-item',
-            ('k',): 'prev-item',
-            ('r',): 'show-related',
-            ('<return>',): 'select-item',
-            ('h',): 'toggle-hidden',
-            ('d',): 'toggle-done',
-            ('e',): 'edit-task',
-            ('E',): 'edit-external',
-            ('n',): 'create-task',
-            (':',): 'jump-to',
-            ('/',): 'search',
-            ('^',): 'clear-search',
-            ('c',): 'search-context',
-            ('p',): 'search-project',
-            ('<f6>',): 'select-project',
-            ('<f7>',): 'select-context',
-            ('t',): 'toggle-tracking',
-            ('^L',): 'refresh-screen',
-            ('^R',): 'reload-tasks',
-            ('u',): 'open-url',
-            ('>',): 'delegate',
-            ('L',): 'load-template',
-            ('S',): 'save-template',
-            ('l',): 'load-search',
-            ('s',): 'save-search',
-            ('?',): 'show-help',
-            ('m',): 'open-manual',
-            ('A',): 'prio-a',
-            ('B',): 'prio-b',
-            ('C',): 'prio-c',
-            ('D',): 'prio-d',
-            ('+',): 'prio-up',
-            ('-',): 'prio-down',
-            ('=',): 'prio-none',
-            ('a',): 'multi-select',
-            (';',): 'apply-multi-select',
-            ('|',): 'pipe-out',
-            }
+            ("q",): "quit",
+            ("^C",): "cancel",
+            ("<escape>",): "cancel",
+            ("<down>",): "next-item",
+            ("<up>",): "prev-item",
+            ("<pgup>",): "page-up",
+            ("<pgdn>",): "page-down",
+            ("<home>",): "first-item",
+            ("<end>",): "last-item",
+            ("j",): "next-item",
+            ("k",): "prev-item",
+            ("r",): "show-related",
+            ("<return>",): "select-item",
+            ("h",): "toggle-hidden",
+            ("d",): "toggle-done",
+            ("e",): "edit-task",
+            ("E",): "edit-external",
+            ("n",): "create-task",
+            (":",): "jump-to",
+            ("/",): "search",
+            ("^",): "clear-search",
+            ("c",): "search-context",
+            ("p",): "search-project",
+            ("<f6>",): "select-project",
+            ("<f7>",): "select-context",
+            ("t",): "toggle-tracking",
+            ("^L",): "refresh-screen",
+            ("^R",): "reload-tasks",
+            ("u",): "open-url",
+            (">",): "delegate",
+            ("L",): "load-template",
+            ("S",): "save-template",
+            ("l",): "load-search",
+            ("s",): "save-search",
+            ("?",): "show-help",
+            ("m",): "open-manual",
+            ("A",): "prio-a",
+            ("B",): "prio-b",
+            ("C",): "prio-c",
+            ("D",): "prio-d",
+            ("+",): "prio-up",
+            ("-",): "prio-down",
+            ("=",): "prio-none",
+            ("a",): "multi-select",
+            (";",): "apply-multi-select",
+            ("|",): "pipe-out",
+        }
         self.editor_key_mapping = {
-            '^C': 'cancel',
-            '<escape>': 'cancel',
-            '<left>': 'go-left',
-            '<right>': 'go-right',
-            '<tab>': 'goto-empty',
-            '^U': 'del-to-bol',
-            '<backspace>': 'del-left',
-            '<del>': 'del-right',
-            '<home>': 'go-bol',
-            '<end>': 'go-eol',
-            '<f6>': 'select-file',
-            '<return>': 'submit-input',
-            }
+            "^C": "cancel",
+            "<escape>": "cancel",
+            "<left>": "go-left",
+            "<right>": "go-right",
+            "<tab>": "goto-empty",
+            "^U": "del-to-bol",
+            "<backspace>": "del-left",
+            "<del>": "del-right",
+            "<home>": "go-bol",
+            "<end>": "go-eol",
+            "<f6>": "select-file",
+            "<return>": "submit-input",
+        }
         self.completion_key_mapping = {
-                '^C': 'comp-close',
-                Key.ESCAPE: 'comp-close',
-                Key.DOWN: 'comp-next',
-                Key.TAB: 'comp-next',
-                '^N': 'comp-next',
-                Key.UP: 'comp-prev',
-                '^P': 'comp-prev',
-                Key.RETURN: 'comp-use',
-            }
+            "^C": "comp-close",
+            Key.ESCAPE: "comp-close",
+            Key.DOWN: "comp-next",
+            Key.TAB: "comp-next",
+            "^N": "comp-next",
+            Key.UP: "comp-prev",
+            "^P": "comp-prev",
+            Key.RETURN: "comp-use",
+        }
         self.functions = {
-            'quit': self.do_quit,
-            'nop': lambda: True,
-            'cancel': lambda: True,
-            'refresh-screen': self.do_refresh_screen,
-            'reload-tasks': self.do_reload_tasks,
-            'search': self.do_start_search,
-            'search-context': self.do_search_context,
-            'search-project': self.do_search_project,
-            'select-context': self.do_select_context,
-            'select-project': self.do_select_project,
-            'load-template': self.do_load_template,
-            'save-template': self.do_save_template,
-            'load-search': self.do_load_search,
-            'save-search': self.do_save_search,
-            'clear-search': self.do_clear_search,
-            'edit-task': self.do_edit_task,
-            'edit-external': self.do_edit_task_external,
-            'create-task': self.do_create_task,
-            'jump-to': self.do_jump_to,
-            'open-url': self.do_open_url,
-            'toggle-tracking': self.do_toggle_tracking,
-            'toggle-done': self.do_toggle_done,
-            'toggle-hidden': self.do_toggle_hidden,
-            'show-help': self.do_show_help,
-            'delegate': self.do_delegate,
-            'open-manual': utils.open_manual,
-            'delete-task': self.do_delete,
-            'show-related': self.do_show_related,
-            'prio-up': self.do_prio_up,
-            'prio-down': self.do_prio_down,
-            'prio-none': lambda: self.do_set_prio(None),
-            'prio-a': lambda: self.do_set_prio('A'),
-            'prio-b': lambda: self.do_set_prio('B'),
-            'prio-c': lambda: self.do_set_prio('C'),
-            'prio-d': lambda: self.do_set_prio('D'),
-            'multi-select': self.do_multi_select,
-            'apply-multi-select': self.do_apply_multi_select,
-            'pipe-out': self.do_pipe_out,
-            }
+            "quit": self.do_quit,
+            "nop": lambda: True,
+            "cancel": lambda: True,
+            "refresh-screen": self.do_refresh_screen,
+            "reload-tasks": self.do_reload_tasks,
+            "search": self.do_start_search,
+            "search-context": self.do_search_context,
+            "search-project": self.do_search_project,
+            "select-context": self.do_select_context,
+            "select-project": self.do_select_project,
+            "load-template": self.do_load_template,
+            "save-template": self.do_save_template,
+            "load-search": self.do_load_search,
+            "save-search": self.do_save_search,
+            "clear-search": self.do_clear_search,
+            "edit-task": self.do_edit_task,
+            "edit-external": self.do_edit_task_external,
+            "create-task": self.do_create_task,
+            "jump-to": self.do_jump_to,
+            "open-url": self.do_open_url,
+            "toggle-tracking": self.do_toggle_tracking,
+            "toggle-done": self.do_toggle_done,
+            "toggle-hidden": self.do_toggle_hidden,
+            "show-help": self.do_show_help,
+            "delegate": self.do_delegate,
+            "open-manual": utils.open_manual,
+            "delete-task": self.do_delete,
+            "show-related": self.do_show_related,
+            "prio-up": self.do_prio_up,
+            "prio-down": self.do_prio_down,
+            "prio-none": lambda: self.do_set_prio(None),
+            "prio-a": lambda: self.do_set_prio("A"),
+            "prio-b": lambda: self.do_set_prio("B"),
+            "prio-c": lambda: self.do_set_prio("C"),
+            "prio-d": lambda: self.do_set_prio("D"),
+            "multi-select": self.do_multi_select,
+            "apply-multi-select": self.do_apply_multi_select,
+            "pipe-out": self.do_pipe_out,
+        }
 
         self.search_bar = None
         self.status_bar = None
@@ -1476,9 +1759,9 @@ class CursesApplication(Application):
             curses.use_default_colors()
             self.update_color_pairs()
         elif len(self.selection_indicator) == 0:
-            self.selection_indicator = '>'
+            self.selection_indicator = ">"
         if len(self.multi_selection_indicator) == 0:
-            self.multi_selection_indicator = '*'
+            self.multi_selection_indicator = "*"
 
         self.tasks = TaskList(self)
         self.search_bar = SearchBar(self, 1, (0, 0))
@@ -1504,7 +1787,7 @@ class CursesApplication(Application):
         then = datetime.datetime.now()
 
         self.set_term_title("pter")
-        self.info(tr('Welcome to pter'))
+        self.info(tr("Welcome to pter"))
         self.focus = [self.tasks]
 
         while not self.quit:
@@ -1519,15 +1802,25 @@ class CursesApplication(Application):
                     source_changed = True
 
                     for panel in self.focus:
-                        if not isinstance(panel, TaskEditor) or isinstance(panel, TaskCreator):
+                        if not isinstance(panel, TaskEditor) or isinstance(
+                            panel, TaskCreator
+                        ):
                             continue
 
                         if panel.task.source is source:
                             # beware! the currently edited task comes from this source
                             # let's see if we can still find it. if not? it has changed!
-                            matching = [t for t in source.tasks if str(t) == str(panel.task.task)]
+                            matching = [
+                                t
+                                for t in source.tasks
+                                if str(t) == str(panel.task.task)
+                            ]
                             if len(matching) == 0:
-                                self.error(tr("The task has changed in the background! Please copy your changes to clipboard and start over."))
+                                self.error(
+                                    tr(
+                                        "The task has changed in the background! Please copy your changes to clipboard and start over."
+                                    )
+                                )
                                 panel.editor.read_only = True
 
             # detect the passing of midnight
@@ -1542,7 +1835,9 @@ class CursesApplication(Application):
             if must_repaint:
                 logging.debug("Must repaint")
                 self.paint(True)
-            elif self.status_bar.is_expired() and not isinstance(self.focus[-1], JumpToIndexReader):
+            elif self.status_bar.is_expired() and not isinstance(
+                self.focus[-1], JumpToIndexReader
+            ):
                 logging.debug("Refreshing status bar")
                 self.status_bar.paint()
             if len(self.focus) > 0:
@@ -1559,19 +1854,28 @@ class CursesApplication(Application):
                 continue
             elif self.focus[-1] is self.search_bar:
                 self.search_bar.handle_key(key)
-            elif isinstance(self.focus[-1], (HelpScreen, UserInput, RemappedInputLine, Selector)):
+            elif isinstance(
+                self.focus[-1], (HelpScreen, UserInput, RemappedInputLine, Selector)
+            ):
                 self.focus[-1].handle_key(key)
-            elif len(self.key_sequence) == 0 and not key.special and str(key) in string.digits:
+            elif (
+                len(self.key_sequence) == 0
+                and not key.special
+                and str(key) in string.digits
+            ):
                 self.do_jump_to(str(key))
             elif len(self.key_sequence) == 0 and self.focus[-1].handle_key(key):
                 # clear status bar
                 if len(self.status_bar.text) > 0:
-                    self.info('')
+                    self.info("")
                 if self.apply_to_multi_selection:
                     self.info(tr("Next action will apply to all multi-selected tasks"))
-            elif len(self.key_sequence) > 0 and self.key_mapping.get((str(key),), None) == 'cancel':
+            elif (
+                len(self.key_sequence) > 0
+                and self.key_mapping.get((str(key),), None) == "cancel"
+            ):
                 self.key_sequence = []
-                self.info('')
+                self.info("")
                 self.apply_to_multi_selection = False
                 logging.debug("Clearing key sequence")
             elif key != Key.TIMEOUT:
@@ -1579,18 +1883,18 @@ class CursesApplication(Application):
                 logging.debug(f"Current key sequence: {kseq}")
                 fnc = self.key_mapping.get(kseq)
                 if fnc is not None:
-                    self.info('')
+                    self.info("")
                     self.key_sequence = []
                     if fnc in self.functions:
                         logging.debug(f"Calling {fnc}")
                         self.functions[fnc]()
                     if fnc != "apply-multi-select":
                         self.apply_to_multi_selection = False
-                elif any(k[:len(kseq)] == kseq for k in self.key_mapping.keys()):
-                    self.key_sequence_info(''.join(kseq))
+                elif any(k[: len(kseq)] == kseq for k in self.key_mapping.keys()):
+                    self.key_sequence_info("".join(kseq))
                     self.key_sequence = list(kseq)
                 else:
-                    self.error(tr('No such keybinding'))
+                    self.error(tr("No such keybinding"))
                     self.key_sequence = []
 
     def paint(self, clear=False):
@@ -1605,7 +1909,7 @@ class CursesApplication(Application):
 
         attr = self.color(common.SETTING_COL_NORMAL)
         try:
-            self.screen.addstr(1, 0, "─"*self.size()[1], attr)
+            self.screen.addstr(1, 0, "─" * self.size()[1], attr)
         except curses.error:
             pass
         self.screen.noutrefresh()
@@ -1626,19 +1930,19 @@ class CursesApplication(Application):
         height, width = self.size()
 
         if len(self.focus) > 0 and isinstance(self.focus[-1], HelpScreen):
-            self.focus[-1].resize(height-1, width)
+            self.focus[-1].resize(height - 1, width)
             self.focus[-1].move(0, 0)
         for panel in self.focus:
-            if hasattr(panel, 'autoresize'):
+            if hasattr(panel, "autoresize"):
                 panel.autoresize()
 
         self.tasks.resize(height - 4, width)
         self.tasks.move(2, 0)
         self.search_bar.resize(width)
         self.status_bar.resize(1, width)
-        self.status_bar.move(height-2, 0)
+        self.status_bar.move(height - 2, 0)
         self.help_bar.resize(1, width)
-        self.help_bar.move(height-1, 0)
+        self.help_bar.move(height - 1, 0)
 
     def apply_search(self):
         current = self.tasks.selected_item
@@ -1650,8 +1954,9 @@ class CursesApplication(Application):
                 task_line.multi_selected = False
         if repaint:
             self.tasks.paint()
-        self.tasks.tasks = [(task, source) for task, source in self.all_tasks
-                                           if self.search.match(task)]
+        self.tasks.tasks = [
+            (task, source) for task, source in self.all_tasks if self.search.match(task)
+        ]
         self.update_sorting()
         self.tasks.rebuild_items()
         self.tasks.jump_to(current)
@@ -1659,9 +1964,9 @@ class CursesApplication(Application):
 
     def update_sorting(self, apply=True):
         new_sort_order = common.DEFAULT_SORT_ORDER
-        for part in self.search.text.split(' '):
-            if part.startswith('sort:'):
-                new_sort_order = part.split(':', 1)[1]
+        for part in self.search.text.split(" "):
+            if part.startswith("sort:"):
+                new_sort_order = part.split(":", 1)[1]
                 break
         if self.sort_order_txt != new_sort_order:
             self.sort_order_txt = new_sort_order
@@ -1680,22 +1985,23 @@ class CursesApplication(Application):
         return True
 
     def update_color_pairs(self):
-        self.colors = {common.SETTING_COL_NORMAL: [Color(7, -1), Color(0, 7)],
-                       common.SETTING_COL_INACTIVE: [Color(8), None],
-                       common.SETTING_COL_ERROR: [Color(1), None],
-                       common.SETTING_COL_PRI_A: [Color(1), None],
-                       common.SETTING_COL_PRI_B: [Color(3), None],
-                       common.SETTING_COL_PRI_C: [Color(6), None],
-                       common.SETTING_COL_CONTEXT: [Color(4), None],
-                       common.SETTING_COL_PROJECT: [Color(2), None],
-                       common.SETTING_COL_HELP_TEXT: [Color(11, 8), None],
-                       common.SETTING_COL_HELP_KEY: [Color(2, 8), None],
-                       common.SETTING_COL_OVERFLOW: [Color(11), None],
-                       common.SETTING_COL_OVERDUE: [Color(7, 1), Color(1, 7)],
-                       common.SETTING_COL_DUE_TODAY: [Color(4), None],
-                       common.SETTING_COL_DUE_TOMORROW: [Color(6), None],
-                       common.SETTING_COL_TRACKING: [Color(7, 2), Color(2, 7)],
-                       }
+        self.colors = {
+            common.SETTING_COL_NORMAL: [Color(7, -1), Color(0, 7)],
+            common.SETTING_COL_INACTIVE: [Color(8), None],
+            common.SETTING_COL_ERROR: [Color(1), None],
+            common.SETTING_COL_PRI_A: [Color(1), None],
+            common.SETTING_COL_PRI_B: [Color(3), None],
+            common.SETTING_COL_PRI_C: [Color(6), None],
+            common.SETTING_COL_CONTEXT: [Color(4), None],
+            common.SETTING_COL_PROJECT: [Color(2), None],
+            common.SETTING_COL_HELP_TEXT: [Color(11, 8), None],
+            common.SETTING_COL_HELP_KEY: [Color(2, 8), None],
+            common.SETTING_COL_OVERFLOW: [Color(11), None],
+            common.SETTING_COL_OVERDUE: [Color(7, 1), Color(1, 7)],
+            common.SETTING_COL_DUE_TODAY: [Color(4), None],
+            common.SETTING_COL_DUE_TOMORROW: [Color(6), None],
+            common.SETTING_COL_TRACKING: [Color(7, 2), Color(2, 7)],
+        }
         if curses.has_colors() and self.use_colors:
             for colorname in self.conf[common.SETTING_GROUP_COLORS]:
                 colpair = self.conf.color_pair(common.SETTING_GROUP_COLORS, colorname)
@@ -1705,7 +2011,7 @@ class CursesApplication(Application):
                 fg, bg = colpair
                 pairidx = 0
 
-                if colorname.startswith('sel-'):
+                if colorname.startswith("sel-"):
                     colorname = colorname[4:]
                     pairidx = 1
 
@@ -1721,23 +2027,25 @@ class CursesApplication(Application):
                 self.color(colorname, 1)
 
             for key in self.conf[common.SETTING_GROUP_HIGHLIGHT]:
-                hlcol = Color(*self.conf.color_pair(common.SETTING_GROUP_HIGHLIGHT, key))
+                hlcol = Color(
+                    *self.conf.color_pair(common.SETTING_GROUP_HIGHLIGHT, key)
+                )
 
                 variant = 0
-                if key.startswith('sel-'):
+                if key.startswith("sel-"):
                     variant = 1
                     key = key[4:]
 
                 if len(key.strip()) == 0:
                     continue
 
-                if 'hl:' + key not in self.colors:
-                    self.colors['hl:' + key] = [None, None]
+                if "hl:" + key not in self.colors:
+                    self.colors["hl:" + key] = [None, None]
 
-                self.colors['hl:' + key][variant] = hlcol
+                self.colors["hl:" + key][variant] = hlcol
 
                 # and initialize the color
-                self.color('hl:' + key, variant)
+                self.color("hl:" + key, variant)
 
     def color(self, colorname, variant=0, default=None):
         """Return a color pair number for use with curses attributes
@@ -1759,7 +2067,9 @@ class CursesApplication(Application):
 
         colors = self.colors[colorname]
         if variant >= len(colors):
-            logging.error(f"Programmer's error: color variant {variant} is invalid ({self.colors}).")
+            logging.error(
+                f"Programmer's error: color variant {variant} is invalid ({self.colors})."
+            )
             raise ValueError(variant)
 
         color = colors[variant]
@@ -1794,7 +2104,9 @@ class CursesApplication(Application):
         next_id = len(self.color_cache) + 1
         if next_id >= curses.COLOR_PAIRS:
             # sucks, we ran out of numbers
-            logging.error(f"Too many color pairs defined. This terminal only supports {curses.COLOR_PAIRS} color pairs.")
+            logging.error(
+                f"Too many color pairs defined. This terminal only supports {curses.COLOR_PAIRS} color pairs."
+            )
             return 0
 
         try:
@@ -1810,7 +2122,11 @@ class CursesApplication(Application):
         for item in self.conf[common.SETTING_GROUP_KEYS]:
             targets = []
             fnc = self.conf.get(common.SETTING_GROUP_KEYS, item, None)
-            for mapping in [self.key_mapping, self.editor_key_mapping, self.completion_key_mapping]:
+            for mapping in [
+                self.key_mapping,
+                self.editor_key_mapping,
+                self.completion_key_mapping,
+            ]:
                 if fnc in mapping.values():
                     targets.append(mapping)
             if len(targets) == 0:
@@ -1824,15 +2140,17 @@ class CursesApplication(Application):
 
             basekseq = parse_key_sequence(item)
             if len(basekseq) > 1 and fnc not in self.functions:
-                logging.warning(f"Cannot bind {item} to {fnc}: key sequences "
-                                f"can not be used for {fnc}")
+                logging.warning(
+                    f"Cannot bind {item} to {fnc}: key sequences "
+                    f"can not be used for {fnc}"
+                )
                 continue
 
             kseq = []
             for key in basekseq:
                 if len(key) == 1:
                     kseq.append(key)
-                elif len(key) == 2 and key[0] == '^':
+                elif len(key) == 2 and key[0] == "^":
                     kseq.append(key.upper())
                 elif key in Key.SPECIAL:
                     kseq.append(key)
@@ -1849,8 +2167,9 @@ class CursesApplication(Application):
                     target[tuple(kseq)] = fnc
                     logging.debug(f"Assigned {kseq} to {fnc}")
                 elif len(kseq) > 1:
-                    logging.fatal(f"Invalid configuration: {fnc} can "
-                                  "not use a key sequence")
+                    logging.fatal(
+                        f"Invalid configuration: {fnc} can " "not use a key sequence"
+                    )
                     continue
                 else:
                     target[kseq[0]] = fnc
@@ -1860,30 +2179,28 @@ class CursesApplication(Application):
         # remove the 'p' shortcut
         sequences = [k for k in self.key_mapping.keys() if len(k) > 1]
         for kseq in sequences:
-            for partial in range(len(kseq)-1):
-                partial = kseq[:partial+1]
+            for partial in range(len(kseq) - 1):
+                partial = kseq[: partial + 1]
                 if partial in self.key_mapping:
                     logging.debug(f"Removing ambiguous mapping {partial}")
                     del self.key_mapping[partial]
 
-        to_exit = [k for k, fnc in self.key_mapping.items() if fnc == 'quit']
+        to_exit = [k for k, fnc in self.key_mapping.items() if fnc == "quit"]
         if len(to_exit) == 0:
             logging.fatal("No key defined to exit pter.")
             raise RuntimeError("No key to exit")
-        to_cancel = [k for k, fnc in self.key_mapping.items() if fnc == 'cancel']
+        to_cancel = [k for k, fnc in self.key_mapping.items() if fnc == "cancel"]
         if len(to_cancel) == 0:
             logging.fatal("No key defined to cancel operations.")
             raise RuntimeError("No key to cancel")
 
     def known_contexts(self):
         """Returns a set of all contexts used in the tasks"""
-        return set(sum([list(source.contexts) for source in self.sources],
-                       start=[]))
+        return set(sum([list(source.contexts) for source in self.sources], start=[]))
 
     def known_projects(self):
         """Returns a set of all projects used in the tasks"""
-        return set(sum([list(source.projects) for source in self.sources],
-                       start=[]))
+        return set(sum([list(source.projects) for source in self.sources], start=[]))
 
     def info(self, text):
         self.status_bar.set_text(text)
@@ -1897,17 +2214,22 @@ class CursesApplication(Application):
         self.status_bar.set_text(text, common.SETTING_COL_ERROR)
         self.status_bar.paint(True)
 
-    def date_as_str(self, text, hint=''):
-        if common.TF_ALL in self.human_friendly_dates or hint in self.human_friendly_dates:
+    def date_as_str(self, text, hint=""):
+        if (
+            common.TF_ALL in self.human_friendly_dates
+            or hint in self.human_friendly_dates
+        ):
             return utils.human_friendly_date(text)
         if not isinstance(text, str):
             return text.strftime(Task.DATE_FMT)
         return text
 
     def resolve_editor(self):
-        candidates = [self.external_editor] \
-                   + [os.getenv(name) for name in ['VISUAL', 'EDITOR']] \
-                   + ['nano']
+        candidates = (
+            [self.external_editor]
+            + [os.getenv(name) for name in ["VISUAL", "EDITOR"]]
+            + ["nano"]
+        )
         for value in candidates:
             if value is None or len(value.strip()) == 0:
                 continue
@@ -1958,11 +2280,15 @@ class CursesApplication(Application):
 
         none = tr("None")
         names = [none] + [name for name in sorted(templates.keys())]
-        self.focus.append(Selector(self.tasks,
-                                   names,
-                                   lambda t: self.set_template(templates, none, t),
-                                   title='Load Template',
-                                   numbered=True))
+        self.focus.append(
+            Selector(
+                self.tasks,
+                names,
+                lambda t: self.set_template(templates, none, t),
+                title="Load Template",
+                numbered=True,
+            )
+        )
         self.paint(True)
 
     def set_template(self, templates, none, template):
@@ -1976,10 +2302,14 @@ class CursesApplication(Application):
             self.error(tr("No task selected to create a template from"))
             return
 
-        self.focus.append(UserInput(self.tasks,
-                                    self._do_save_template,
-                                    lambda: self.app.show_cursor(False),
-                                    "Save Template"))
+        self.focus.append(
+            UserInput(
+                self.tasks,
+                self._do_save_template,
+                lambda: self.app.show_cursor(False),
+                "Save Template",
+            )
+        )
         self.paint(True)
 
     def _do_save_template(self, name):
@@ -2012,11 +2342,15 @@ class CursesApplication(Application):
             return
 
         names = [name for name in sorted(searches.keys())]
-        self.focus.append(Selector(self.tasks,
-                                   names,
-                                   lambda s: self.set_named_search(searches, s),
-                                   title='Load Search',
-                                   numbered=True))
+        self.focus.append(
+            Selector(
+                self.tasks,
+                names,
+                lambda s: self.set_named_search(searches, s),
+                title="Load Search",
+                numbered=True,
+            )
+        )
         self.paint(True)
 
     def set_named_search(self, searches, search):
@@ -2035,13 +2369,17 @@ class CursesApplication(Application):
         self.tasks.paint(True)
 
     def do_clear_search(self):
-        self.set_search('')
+        self.set_search("")
 
     def do_save_search(self):
-        self.focus.append(UserInput(self.tasks,
-                                    self._do_save_search,
-                                    lambda: self.show_cursor(False),
-                                    "Save Search"))
+        self.focus.append(
+            UserInput(
+                self.tasks,
+                self._do_save_search,
+                lambda: self.show_cursor(False),
+                "Save Search",
+            )
+        )
         self.paint(True)
 
     def _do_save_search(self, name):
@@ -2064,7 +2402,9 @@ class CursesApplication(Application):
         self.paint()
 
     def do_edit_task_external(self):
-        multi_selected = [task_line for task_line in self.tasks.items if task_line.multi_selected]
+        multi_selected = [
+            task_line for task_line in self.tasks.items if task_line.multi_selected
+        ]
         if multi_selected:
             return self.do_edit_task_external_multi(multi_selected)
         task = self.tasks.selected_item
@@ -2077,7 +2417,7 @@ class CursesApplication(Application):
             self.error(tr("Could not determine your external text editor"))
             return
 
-        with tempfile.NamedTemporaryFile("w+t", encoding="utf-8", suffix='.txt') as fh:
+        with tempfile.NamedTemporaryFile("w+t", encoding="utf-8", suffix=".txt") as fh:
             tempname = fh.name
             fh.write(str(task.task))
             fh.flush()
@@ -2102,7 +2442,7 @@ class CursesApplication(Application):
             self.error(tr("Could not determine your external text editor"))
             return
 
-        with tempfile.NamedTemporaryFile("w+t", encoding="utf-8", suffix='.txt') as fh:
+        with tempfile.NamedTemporaryFile("w+t", encoding="utf-8", suffix=".txt") as fh:
             tempname = fh.name
             for task in tasks:
                 fh.write(str(task.task) + "\n")
@@ -2114,7 +2454,9 @@ class CursesApplication(Application):
 
         for idx, tasktext in enumerate([text.strip() for text in tasktexts if text]):
             task = tasks[idx]
-            tasktext = utils.dehumanize_dates(utils.auto_task_id(self.sources, tasktext))
+            tasktext = utils.dehumanize_dates(
+                utils.auto_task_id(self.sources, tasktext)
+            )
             if tasktext != str(task.task):
                 self.modify_task(task, lambda t: t.parse(tasktext))
 
@@ -2124,10 +2466,10 @@ class CursesApplication(Application):
         self.focus.append(TaskCreator(self.tasks))
         self.paint()
 
-    def do_jump_to(self, init=''):
+    def do_jump_to(self, init=""):
         if len(self.focus) == 0:
             return
-        if not hasattr(self.focus[-1], 'jump_to'):
+        if not hasattr(self.focus[-1], "jump_to"):
             logging.debug(f"{self.focus[-1]} does not have a 'jump_to' function")
             return
 
@@ -2150,19 +2492,26 @@ class CursesApplication(Application):
                     continue
                 urls.append(match.group(0))
 
-        urls = [url[1:-1] if url.startswith('<') and url.endswith('>') else url
-                for url in urls if len(url) > 0]
+        urls = [
+            url[1:-1] if url.startswith("<") and url.endswith(">") else url
+            for url in urls
+            if len(url) > 0
+        ]
 
         if len(urls) == 0:
             self.info(tr("No URLs found"))
             return
 
         if len(urls) > 1:
-            self.focus.append(Selector(self.tasks,
-                                       urls,
-                                       lambda u: webbrowser.open(u),
-                                       title="Open URL",
-                                       numbered=True))
+            self.focus.append(
+                Selector(
+                    self.tasks,
+                    urls,
+                    lambda u: webbrowser.open(u),
+                    title="Open URL",
+                    numbered=True,
+                )
+            )
             self.paint(True)
         else:
             webbrowser.open(urls[0])
@@ -2171,8 +2520,9 @@ class CursesApplication(Application):
     def do_toggle_tracking(self):
         if self.tasks.selected_item is None:
             return
-        success, task = self.modify_task(self.tasks.selected_item,
-                                         lambda t: utils.toggle_tracking(t))
+        success, task = self.modify_task(
+            self.tasks.selected_item, lambda t: utils.toggle_tracking(t)
+        )
         if success:
             self.tasks.jump_to(task)
             self.tasks.paint_item(self.tasks.selected_item)
@@ -2181,8 +2531,12 @@ class CursesApplication(Application):
     def do_toggle_done(self):
         if self.tasks.selected_item is None:
             return
-        success, _ = self.modify_task(self.tasks.selected_item,
-                                      lambda t: utils.toggle_done(t, self.clear_contexts, self.reuse_recurring, self.safe_save))
+        success, _ = self.modify_task(
+            self.tasks.selected_item,
+            lambda t: utils.toggle_done(
+                t, self.clear_contexts, self.reuse_recurring, self.safe_save
+            ),
+        )
         if success:
             self.tasks.paint(True)
 
@@ -2190,8 +2544,9 @@ class CursesApplication(Application):
     def do_toggle_hidden(self):
         if self.tasks.selected_item is None:
             return
-        success, _ = self.modify_task(self.tasks.selected_item,
-                                      lambda t: utils.toggle_hidden(t))
+        success, _ = self.modify_task(
+            self.tasks.selected_item, lambda t: utils.toggle_hidden(t)
+        )
         if success:
             self.tasks.paint(True)
 
@@ -2199,8 +2554,7 @@ class CursesApplication(Application):
     def do_prio_up(self):
         if self.tasks.selected_item is None:
             return
-        success, _ = self.modify_task(self.tasks.selected_item,
-                                      utils.increase_priority)
+        success, _ = self.modify_task(self.tasks.selected_item, utils.increase_priority)
         if success:
             self.tasks.paint(True)
 
@@ -2208,8 +2562,7 @@ class CursesApplication(Application):
     def do_prio_down(self):
         if self.tasks.selected_item is None:
             return
-        success, _ = self.modify_task(self.tasks.selected_item,
-                                      utils.decrease_priority)
+        success, _ = self.modify_task(self.tasks.selected_item, utils.decrease_priority)
         if success:
             self.tasks.paint(True)
 
@@ -2217,15 +2570,16 @@ class CursesApplication(Application):
     def do_set_prio(self, prio):
         if self.tasks.selected_item is None:
             return
-        success, _ = self.modify_task(self.tasks.selected_item,
-                                      lambda t: utils.set_priority(t, prio))
+        success, _ = self.modify_task(
+            self.tasks.selected_item, lambda t: utils.set_priority(t, prio)
+        )
         if success:
             self.tasks.paint(True)
 
     def do_show_help(self):
         self.focus.append(HelpScreen(self))
         height, width = self.size()
-        self.focus[-1].resize(height-1, width)
+        self.focus[-1].resize(height - 1, width)
         self.focus[-1].move(0, 0)
         self.paint(True)
 
@@ -2239,22 +2593,22 @@ class CursesApplication(Application):
             self.error(tr("No delegation marker defined"))
             return
 
-        if self.delegation_marker in str(task.task).split(' '):
+        if self.delegation_marker in str(task.task).split(" "):
             self.do_delegation_action(task.task)
             return
 
-        success, task = self.modify_task(task,
-                                         lambda t: utils.delegate_task(t, self.delegation_marker))
+        success, task = self.modify_task(
+            task, lambda t: utils.delegate_task(t, self.delegation_marker)
+        )
         if success:
             self.do_delegation_action(task)
             self.tasks.jump_to(task)
             self.tasks.paint_item(self.tasks.selected_item)
 
     def do_delegation_action(self, task):
-        utils.execute_delegate_action(task,
-                                      self.delegate_to,
-                                      self.delegation_marker,
-                                      self.delegation_action)
+        utils.execute_delegate_action(
+            task, self.delegate_to, self.delegation_marker, self.delegation_action
+        )
 
     def do_refresh_screen(self):
         self.paint(True)
@@ -2266,21 +2620,22 @@ class CursesApplication(Application):
             return
 
         task = task.task
-        others = set(task.attributes.get('after', []) + \
-                     task.attributes.get('ref', []))
+        others = set(task.attributes.get("after", []) + task.attributes.get("ref", []))
         if len(others) == 0:
             self.error(tr("No related tasks declared (like 'after:' or 'ref:')"))
             return
 
-        show_self = self.conf.get(common.SETTING_GROUP_GENERAL, common.SETTING_RELATED_SHOW_SELF).lower()
+        show_self = self.conf.get(
+            common.SETTING_GROUP_GENERAL, common.SETTING_RELATED_SHOW_SELF
+        ).lower()
 
-        if show_self in self.conf.BOOL_TRUE + ['force']:
-            if 'id' not in task.attributes and show_self == 'force':
-                task.parse(str(task) + ' id:' + utils.new_task_id(self.sources))
-            if 'id' in task.attributes:
-                others.add(task.attributes['id'][0])
+        if show_self in self.conf.BOOL_TRUE + ["force"]:
+            if "id" not in task.attributes and show_self == "force":
+                task.parse(str(task) + " id:" + utils.new_task_id(self.sources))
+            if "id" in task.attributes:
+                others.add(task.attributes["id"][0])
 
-        self.set_search(' '.join(['id:' + other for other in sorted(others)]))
+        self.set_search(" ".join(["id:" + other for other in sorted(others)]))
 
     def do_search_context(self):
         task = self.tasks.selected_item
@@ -2288,21 +2643,26 @@ class CursesApplication(Application):
             return
 
         task = task.task
-        contexts = [context for context in task.contexts
-                    if context not in self.search.contexts]
+        contexts = [
+            context for context in task.contexts if context not in self.search.contexts
+        ]
 
         if len(contexts) == 0:
             return
 
         contexts.sort()
         if len(contexts) == 1:
-            self.add_to_search('@'+contexts[0])
+            self.add_to_search("@" + contexts[0])
         else:
-            self.focus.append(Selector(self.tasks,
-                                       contexts,
-                                       lambda c: self.add_to_search('@'+c),
-                                       title="Select Context",
-                                       numbered=True))
+            self.focus.append(
+                Selector(
+                    self.tasks,
+                    contexts,
+                    lambda c: self.add_to_search("@" + c),
+                    title="Select Context",
+                    numbered=True,
+                )
+            )
             self.paint(True)
 
     def do_select_project(self):
@@ -2313,13 +2673,17 @@ class CursesApplication(Application):
         projects = [p[1:] for p in sorted(projects) if len(p) > 1]
 
         if len(projects) == 1:
-            self.set_search('+'+projects[0])
+            self.set_search("+" + projects[0])
         else:
-            self.focus.append(Selector(self.tasks,
-                                       projects,
-                                       lambda p: self.set_search('+'+p),
-                                       title="Select project",
-                                       numbered=True))
+            self.focus.append(
+                Selector(
+                    self.tasks,
+                    projects,
+                    lambda p: self.set_search("+" + p),
+                    title="Select project",
+                    numbered=True,
+                )
+            )
             self.paint(True)
 
     def do_select_context(self):
@@ -2330,13 +2694,17 @@ class CursesApplication(Application):
 
         contexts = [c[1:] for c in sorted(contexts) if len(c) > 1]
         if len(contexts) == 1:
-            self.set_search('@'+contexts[0])
+            self.set_search("@" + contexts[0])
         else:
-            self.focus.append(Selector(self.tasks,
-                                       contexts,
-                                       lambda c: self.set_search('@'+c),
-                                       title="Select Context",
-                                       numbered=True))
+            self.focus.append(
+                Selector(
+                    self.tasks,
+                    contexts,
+                    lambda c: self.set_search("@" + c),
+                    title="Select Context",
+                    numbered=True,
+                )
+            )
             self.paint(True)
 
     @multi_select
@@ -2349,7 +2717,9 @@ class CursesApplication(Application):
             t.todotxt.tasks.remove(t)
             t.parse("")
 
-        can_perm_delete = self.last_perm_delete + self.perm_delete_timeout < datetime.datetime.now()
+        can_perm_delete = (
+            self.last_perm_delete + self.perm_delete_timeout < datetime.datetime.now()
+        )
 
         if self.delete_is == common.DELETE_OPTION_DISABLED:
             return
@@ -2380,7 +2750,7 @@ class CursesApplication(Application):
 
     def add_to_search(self, text):
         if len(self.search.text) > 0:
-            text = ' ' + text
+            text = " " + text
         self.set_search(self.search.text + text)
 
     def do_search_project(self):
@@ -2389,21 +2759,26 @@ class CursesApplication(Application):
             return
 
         task = task.task
-        projects = [project for project in task.projects
-                    if project not in self.search.projects]
+        projects = [
+            project for project in task.projects if project not in self.search.projects
+        ]
 
         if len(projects) == 0:
             return
 
         projects.sort()
         if len(projects) == 1:
-            self.add_to_search('+'+projects[0])
+            self.add_to_search("+" + projects[0])
         else:
-            self.focus.append(Selector(self.tasks,
-                                       projects,
-                                       lambda p: self.add_to_search('+'+p),
-                                       title="Select Project",
-                                       numbered=True))
+            self.focus.append(
+                Selector(
+                    self.tasks,
+                    projects,
+                    lambda p: self.add_to_search("+" + p),
+                    title="Select Project",
+                    numbered=True,
+                )
+            )
             self.paint(True)
 
     def do_multi_select(self):
@@ -2422,18 +2797,31 @@ class CursesApplication(Application):
         self.apply_to_multi_selection = True
         self.info(tr("Next action will apply to all multi-selected tasks"))
 
-
     @multi_select
     def do_pipe_out(self):
-        command = self.config.pipe_out_command
+        command = self.conf.get("General", "pipe-out-command")
+        if not command:
+            return
+        taskline = self.tasks.selected_item
+        if not taskline:
+            return
         try:
-            proc = subprocess.run(command)
-        except Exception:
-            pass
-        if proc.exit_code == 0:
-            std_out = proc.stdout
-            self = std_out
-        self.tasks.paint(True)
+            proc = subprocess.run(
+                command.split(" "),
+                input=str(taskline.task),
+                text=True,
+                capture_output=True,
+                timeout=5,
+            )
+        except Exception as error:
+            self.info(str(error).strip())
+        else:
+            if proc.returncode == 0 and proc.stdout:
+                if self.modify_task(taskline, lambda t: t.parse(proc.stdout)):
+                    self.tasks.paint(True)
+            if proc.stderr.strip():
+                self.info(tr(proc.stderr.strip()))
+
 
 def parse_key_sequence(text):
     sequence = []
@@ -2441,18 +2829,18 @@ def parse_key_sequence(text):
     pos = 0
     while pos < len(text):
         token = text[pos]
-        if token == '<':
-            other = text.find('>', pos)
+        if token == "<":
+            other = text.find(">", pos)
             if other < 0:
                 return None
-            sequence.append(text[pos:other+1])
+            sequence.append(text[pos : other + 1])
             pos = other
-        elif token == '^' and pos < len(text)-1:
+        elif token == "^" and pos < len(text) - 1:
             pos += 1
-            if text[pos] == '^':
-                sequence.append('^')
+            if text[pos] == "^":
+                sequence.append("^")
             else:
-                sequence.append('^' + text[pos])
+                sequence.append("^" + text[pos])
         else:
             sequence.append(token)
 
@@ -2473,9 +2861,9 @@ def add_title(panel, title, attr=0):
         w -= 1
 
     w -= 2  # the indicators left and right
-    label = title[:min(w, len(title))]
+    label = title[: min(w, len(title))]
     if label != title:
-        label = label[:-1] + '…'
+        label = label[:-1] + "…"
 
     panel.win.addstr(0, 1, f"┤{label}├", attr)
 
@@ -2489,30 +2877,30 @@ def run_cursesui(args):
 
     if len(sources) == 0:
         success = -1
-        print(tr("To start pter you must provide at least one todo.txt file. "
-                 "See --help for more information."),
-              file=sys.stderr)
+        print(
+            tr(
+                "To start pter you must provide at least one todo.txt file. "
+                "See --help for more information."
+            ),
+            file=sys.stderr,
+        )
     else:
-        search = Searcher('', False)
+        search = Searcher("", False)
         search.update_sources(sources)
 
-        window = CursesApplication(sources,
-                                   configuration.get_config(args),
-                                   args.search)
+        window = CursesApplication(sources, configuration.get_config(args), args.search)
 
         exception = None
 
         try:
             window.run()
         except Exception as exc:
-            callstack = ''.join(traceback.format_tb(exc.__traceback__))
-            logging.fatal("Pter crashed with exception: %s\n%s",
-                          exc, callstack)
+            callstack = "".join(traceback.format_tb(exc.__traceback__))
+            logging.fatal("Pter crashed with exception: %s\n%s", exc, callstack)
             exception = exc
             success = -3
 
-        if args.log_level.lower() == 'debug' and exception is not None:
+        if args.log_level.lower() == "debug" and exception is not None:
             raise exception
 
     return success
-
