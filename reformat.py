@@ -4,6 +4,7 @@ If no output file is given, print the reformatted list to stdout.
 Usage:
     reformat [--archive=ARCHIVE] INPUT [OUTPUT]
 """
+
 from docopt import docopt
 import pytodotxt as txt
 import re
@@ -33,27 +34,32 @@ def reformat(todo):
         ),
     ]
     for task in tasks:
-        if "pri" in task.attributes:
-            if not task.priority:
-                task.priority = task.attributes["pri"][0]
-            task.remove_attribute("pri")
-        if not task.is_completed and "rec" in task.attributes:
-            if not task.due_date:
-                task.add_attribute("due", today.isoformat())
-            #elif task.attributes["rec"][0].startswith("+"):
-            else:
-                prev_due_date = task.due_date
-                while True:
-                    next_due_date = get_relative_date(
-                        task.attributes["rec"][0], None, prev_due_date
-                    )
-                    if not next_due_date or next_due_date > today:
-                        break
-                    prev_due_date = next_due_date
-                if prev_due_date != task.due_date:
-                    task.replace_attribute(
-                        "due", task.due_date.isoformat(), prev_due_date.isoformat()
-                    )
+        try:
+            if "pri" in task.attributes:
+                if not task.priority:
+                    task.priority = task.attributes["pri"][0]
+                task.remove_attribute("pri")
+            if not task.is_completed and "rec" in task.attributes:
+                if not task.due_date:
+                    task.add_attribute("due", today.isoformat())
+                # elif task.attributes["rec"][0].startswith("+"):
+                else:
+                    prev_due_date = task.due_date
+                    while True:
+                        next_due_date = get_relative_date(
+                            task.attributes["rec"][0], None, prev_due_date
+                        )
+                        if not next_due_date or next_due_date > today:
+                            break
+                        prev_due_date = next_due_date
+                    if prev_due_date != task.due_date:
+                        task.replace_attribute(
+                            "due", task.due_date.isoformat(), prev_due_date.isoformat()
+                        )
+        except Exception:
+            breakpoint()
+            print(f"Error with task {task}")
+            raise
 
     lines = []
     for task in sorted(
