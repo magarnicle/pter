@@ -14,6 +14,21 @@ from datetime import datetime
 from pter.searcher import get_relative_date
 
 
+def parse_date(date_text):
+    try:
+        parsed_date = datetime.fromisoformat(date_text)
+    except ValueError:
+        parsed_date = None
+        for format in ["%Y-%m-%d"]:
+            try:
+                parsed_date = datetime.strptime(date_text, format)
+            except ValueError:
+                continue
+        if not parsed_date:
+            raise ValueError(f"Could not parse due date format {date_text}")
+    return parsed_date
+
+
 def reformat(todo):
     tasks = todo.parse()
     today = datetime.now().date()
@@ -40,11 +55,13 @@ def reformat(todo):
                     task.priority = task.attributes["pri"][0]
                 task.remove_attribute("pri")
             if not task.is_completed and "rec" in task.attributes:
-                if not task.due_date:
+                if "due" not in task.attributes:
                     task.add_attribute("due", today.isoformat())
                 # elif task.attributes["rec"][0].startswith("+"):
                 else:
-                    prev_due_date = task.due_date
+                    due_date_text = task.attributes["due"][0]
+                    prev_due_date = parse_date(due_date_text)
+                    original_due_date = prev_due_date
                     while True:
                         next_due_date = get_relative_date(
                             task.attributes["rec"][0], None, prev_due_date
@@ -52,12 +69,13 @@ def reformat(todo):
                         if not next_due_date or next_due_date > today:
                             break
                         prev_due_date = next_due_date
-                    if prev_due_date != task.due_date:
+                    if prev_due_date != original_due_date:
                         task.replace_attribute(
-                            "due", task.due_date.isoformat(), prev_due_date.isoformat()
+                            "due",
+                            original_due_date.isoformat(),
+                            prev_due_date.isoformat(),
                         )
         except Exception:
-            breakpoint()
             print(f"Error with task {task}")
             raise
 
@@ -68,7 +86,7 @@ def reformat(todo):
             f"{1 if x.is_completed else 0}"
             f'{x.priority or "Z"}'
             f'{x.completion_date.isoformat() if x.completion_date else "9999"}'
-            f'{x.due_date.isoformat() if x.due_date else "9999"}'
+            f'{parse_date(x.attributes["due"][0]).isoformat() if x.attributes.get("due") else "9999"}'
             f"{x.bare_description()}"
         ),
     ):
