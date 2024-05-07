@@ -72,7 +72,7 @@ def reformat(todo):
                     if prev_due_date != original_due_date:
                         task.replace_attribute(
                             "due",
-                            original_due_date.isoformat(),
+                            original_due_date.date().isoformat(),
                             prev_due_date.isoformat(),
                         )
         except Exception:
