@@ -5,7 +5,7 @@ import locale
 import io
 
 try:
-    from pter.curses import run_cursesui
+    from pter.pcurses import run_cursesui
 except ImportError:
     run_cursesui = None
 
@@ -131,3 +131,8 @@ def run():
         success = -2
 
     return success
+
+if __name__ == '__main__':
+    import re
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(run())
